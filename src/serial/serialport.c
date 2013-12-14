@@ -52,14 +52,9 @@ int serialport_writeChar(HANDLE fd, char b)
 int serialport_write(HANDLE fd, const char* str)
 
 {
-//int n=0;
-	int len = 6; //strlen(str);
-	printf("len : %i\n", len);
-	for (int j = 0; j < len; j++) {
-		printf(" %i:%02x\n", len, str[j]);
-// n += write(fd, str[j], 1);
 
-	}
+	int len = 6;
+	//int len = strlen(str);
 
 #if defined (_WINDOZ)
 //	int n = serialport_writewin(fd,str,len);
