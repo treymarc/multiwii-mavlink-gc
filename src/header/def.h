@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -23,22 +22,22 @@
 /*
  * version
  */
-#define MWGC_VERSION "SNAPSHOT-2012.05.05"
+#define MWGC_VERSION "SNAPSHOT-2013.12.14"
 
 /*
  * log level
  */
 #if !defined(_LOGLEVL)
-	#define _LOGLEVL 0
+#define _LOGLEVL 0
 #endif
 
 /*
  * build specific
  */
 #if defined( _WINDOZ )
-	#include <Windows.h>
+#include <Windows.h>
 #else
-	typedef int HANDLE;
+typedef int HANDLE;
 #endif
 
 #endif

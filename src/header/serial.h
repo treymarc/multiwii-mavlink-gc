@@ -24,7 +24,6 @@
 
 #include "def.h"
 
-
 #define SERIAL_DEFAULT_BAUDRATE 0
 
 HANDLE serialport_init(const char* serialport, int i);

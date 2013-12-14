@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -17,7 +16,6 @@
 
  ****************************************************************************/
 
-
 #include "def.h"
 /*
  * logic
@@ -25,13 +23,11 @@
 #define NOK -1
 #define OK 1
 
-
 /*
  * math
  */
 #define PI 3.1415926535897932384626433832795
 #define deg2radian(X) (PI * X) / 180
-
 
 /*
  * log
@@ -39,9 +35,9 @@
 #define MW_ERROR(x) printf(x);
 
 #if (_LOGLEVL>2)
- #define MW_INFO(x) printf(x);
- #define MW_TRACE(x) printf(x);
+#define MW_INFO(x) printf(x);
+#define MW_TRACE(x) printf(x);
 #else
- #define MW_INFO(x);
- #define MW_TRACE(x);
+#define MW_INFO(x);
+#define MW_TRACE(x);
 #endif

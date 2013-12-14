@@ -31,8 +31,6 @@
 #include <fcntl.h>
 
 #define BUFFER_LENGTH 2041 // minimum buffer size that can be used with qnx (I don't know why)
-
-
 #if (defined __QNX__) | (defined __QNXNTO__)
 /* QNX specific headers */
 #include <unix.h>
@@ -70,7 +68,6 @@ typedef struct in_addr IN_ADDR;
 /* mavlink message headers*/
 #include "../mav/common/mavlink.h"
 
-
 #include "../header/serial.h"
 #include "../header/utils.h"
 #include "../header/mwi_newserial.h"
@@ -84,13 +81,17 @@ void rtfmVersion(void);
 uint64_t microsSinceEpoch(void);
 
 // mwi binary protocol
-int serialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
 int serialbuffer_processNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
 
 // for reading byte from mwi binary buffer
 int read32(void);
 int16_t read16(void);
 int8_t read8(void);
+
+void save(int aByte);
+void setState(int aState);
+void decode(mwi_uav_state_t *mwiState);
 
 void handleMessage(mavlink_message_t* currentMsg);
 
@@ -220,43 +221,40 @@ int main(int argc, char* argv[]) {
 
 	MW_TRACE("starting..\n")
 
+	uint64_t lastFrameRequest = 0;
 
-	uint64_t lastFrameRequest =0;
-
-	uint64_t lastHeartBeat =0;
-	uint64_t currentTime= microsSinceEpoch();
-
+	uint64_t lastHeartBeat = 0;
+	uint64_t currentTime = microsSinceEpoch();
 
 	for (;;) {
+		MW_TRACE("beginloop\n")
 
 		currentTime = microsSinceEpoch();
 
-
-
 		if ((currentTime - lastFrameRequest) > 1000 * 30) {
 
-			if (identSended == OK){
+			if (identSended == OK) {
 				lastFrameRequest = currentTime;
-				serialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				serialbuffer_askForFrame(serialLink, MSP_DEBUG);
-				serialbuffer_askForFrame(serialLink, MSP_BAT);
-				serialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-				serialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-				serialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-				serialbuffer_askForFrame(serialLink, MSP_RC);
-				serialbuffer_askForFrame(serialLink, MSP_MOTOR);
-				serialbuffer_askForFrame(serialLink, MSP_SERVO);
-				serialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				serialbuffer_askForFrame(serialLink, MSP_STATUS);
-				serialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+				MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
+				MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+				MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
+				MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RC);
+				MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
+				MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+				MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
 
 				if ((currentTime - lastHeartBeat) > 1000 * 500) {
-					lastHeartBeat=currentTime;
-					serialbuffer_askForFrame(serialLink, MSP_IDENT);
+					lastHeartBeat = currentTime;
+					MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
 				}
 
-			}else{
-				serialbuffer_askForFrame(serialLink, MSP_IDENT);
+			} else {
+				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
 			}
 			//TODO
 			//MSP_MOTOR
@@ -266,24 +264,21 @@ int main(int argc, char* argv[]) {
 
 		}
 
-
-		while (serialbuffer_processNewFrames(serialLink, mwiState) != NOK){
+		while (serialbuffer_processNewFrames(serialLink, mwiState) != NOK) {
 			// do serial reading
 		}
 
-
-
 		//  udp in
 		memset(udpInBuf, 0, BUFFER_LENGTH);
-		MW_TRACE("udp listen ? ")
+		//MW_TRACE("udp listen ? ")
 
 		recsize = recvfrom(sock, (void *) udpInBuf, BUFFER_LENGTH, 0,
 				(struct sockaddr *) &groundStationAddr, &fromlen);
-		MW_TRACE("..")
+		//MW_TRACE("..")
 		if (recsize > 0) {
 			MW_TRACE("\n")MW_TRACE(" <-- udp in <--\n")
-											// Something received - print out all bytes and parse packet
-											mavlink_message_t msgIn;
+			// Something received - print out all bytes and parse packet
+			mavlink_message_t msgIn;
 			mavlink_status_t status;
 			unsigned int temp = 0;
 			printf("Bytes Received: %d\nDatagram: ", (int) recsize);
@@ -305,31 +300,30 @@ int main(int argc, char* argv[]) {
 		// no need to rush
 		usleep(5000);
 
-
 		MW_TRACE("endloop\n")
 
 	}
 }
 
 //--
-void handleMessage(mavlink_message_t* currentMsg)
-{
+void handleMessage(mavlink_message_t* currentMsg) {
 	switch (currentMsg->msgid) {
 
-	case MAVLINK_MSG_ID_REQUEST_DATA_STREAM:
-	{
+	case MAVLINK_MSG_ID_REQUEST_DATA_STREAM: {
 		// decode
 		mavlink_request_data_stream_t packet;
 		mavlink_msg_request_data_stream_decode(currentMsg, &packet);
 
 		int freq = 0; // packet frequency
 
-		if (packet.start_stop == 0) freq = 0; // stop sending
-		else if (packet.start_stop == 1) freq = packet.req_message_rate; // start sending
-		else break;
+		if (packet.start_stop == 0)
+			freq = 0; // stop sending
+		else if (packet.start_stop == 1)
+			freq = packet.req_message_rate; // start sending
+		else
+			break;
 
-		switch(packet.req_stream_id)
-		{
+		switch (packet.req_stream_id) {
 		case MAV_DATA_STREAM_ALL:
 			// global_data.streamRateExtra3 = freq;
 			break;
@@ -366,10 +360,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 		break;
 	}
 
-
-
-	case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-	{
+	case MAVLINK_MSG_ID_PARAM_REQUEST_LIST: {
 
 		printf("got MAVLINK_MSG_ID_PARAM_REQUEST_LIST\n");
 		// decode
@@ -381,10 +372,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 		break;
 	}
 
-
-
-	case MAVLINK_MSG_ID_PARAM_SET:
-	{
+	case MAVLINK_MSG_ID_PARAM_SET: {
 		// decode
 		mavlink_param_set_t packet;
 		mavlink_msg_param_set_decode(currentMsg, &packet);
@@ -419,7 +407,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 		//                }
 		//            }
 
-		printf ("key = %i, value = %i\n",key , packet.param_value);
+		printf("key = %d, value = %g\n", key, packet.param_value);
 
 		//            // Report back new value
 		//            char param_name[ONBOARD_PARAM_NAME_LENGTH];             // XXX HACK - need something to return a char *
@@ -437,40 +425,22 @@ void handleMessage(mavlink_message_t* currentMsg)
 }
 //--
 
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID) {
 
-//  buffer for the received frame
+	char msg[6];
+	int hash = 0;
+	int payloadz = 0;
 
-static char bufSerial[MWI_FULLFRAME_SIZE];
-static int indx;
+	hash ^= payloadz;
+	hash ^= MSP_ID;
 
-
-
-int read32(void) {
-	int t = bufSerial[indx++] & 0xff;
-	t += bufSerial[indx++] << 8;
-	t += bufSerial[indx++] << 6;
-	return t;
-
-}
-
-int16_t read16(void) {
-	int16_t t = bufSerial[indx++] & 0xff;
-	t += bufSerial[indx++] << 8;
-	return t;
-}
-
-int8_t read8(void) {
-	return (bufSerial[indx++] & 0xff);
-}
-
-
-int serialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID) {
-
-
-	char msg[4] = "0000";
-	strcpy(msg, GS_TO_FC);
-	msg[3] = MSP_ID;
-
+	//strcpy(msg, GS_TO_FC);
+	msg[0] = MSP_HEAD1;
+	msg[1] = MSP_HEAD2;
+	msg[2] = MSP_TO_GC;
+	msg[3] = payloadz;
+	msg[4] = MSP_ID;
+	msg[5] = hash;
 
 	if (serialport_write(serialPort, msg) == -1) {
 		// fail to write command to serial port
@@ -479,293 +449,402 @@ int serialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID) {
 	return OK;
 }
 
-static uint8_t stateMSP;
-static uint8_t checksum;
+int MASK = 0xff;
+#define IDLE  0
+#define HEADER_START 1
+#define HEADER_M  2
+#define HEADER_ARROW  3
+#define HEADER_SIZE  4
+#define  HEADER_CMD 5
+int offset;
+int blength = 100;
+char buffer[100];
+uint8_t stateMSP = IDLE;
+uint8_t checksum;
+//uint8_t cmd; // incoming commande
+uint8_t dataSize; // size of the incoming payload
+int readindex = 0;
+// assemble a byte of the reply packet into "buffer"
+void save(int aByte) {
+	if (offset < blength)
+		buffer[offset++] = aByte;
+}
+
+void setState(int aState) {
+	stateMSP = aState;
+}
+
+int read32(void) {
+	int t = buffer[readindex++] & 0xff;
+	t += buffer[readindex++] << 8;
+	t += buffer[readindex] << 6;
+	return t;
+
+}
+
+int16_t read16(void) {
+	int16_t t = buffer[readindex++] & 0xff;
+	t += buffer[readindex++] << 8;
+	return t;
+}
+
+int8_t read8(void) {
+	return (buffer[readindex++] & 0xff);
+}
+
+void decode(mwi_uav_state_t *mwiState) {
+	MW_TRACE("decoded");
+	uint64_t currentTime = microsSinceEpoch();
+
+	readindex = 0;
+	int recievedCmd = read8();
+	// mavlink msg
+	int len = 0;
+	int i = 0;
+	uint8_t buf[BUFFER_LENGTH];
+	mavlink_message_t msg;
+
+	switch (recievedCmd) {
+	case MSP_IDENT:
+		MW_TRACE("MSP_IDENT")
+		mwiState->version = read8();
+		mwiState->multiType = read8();
+		mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR,
+				MAV_AUTOPILOT_GENERIC, MAV_MODE_STABILIZE_ARMED, 0,
+				MAV_STATE_ACTIVE);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+		identSended = OK;
+		break;
+
+	case MSP_STATUS:
+		MW_TRACE("MSP_STATUS")
+		mwiState->cycleTime = read16();
+		mwiState->i2cError = read16();
+		mwiState->present = read16();
+		mwiState->mode = read16();
+		// if ((present&1) >0) {buttonAcc.setColorBackground(green_);} else {buttonAcc.setColorBackground(red_);tACC_ROLL.setState(false); tACC_PITCH.setState(false); tACC_Z.setState(false);}
+		// if ((present&2) >0) {buttonBaro.setColorBackground(green_);} else {buttonBaro.setColorBackground(red_); tBARO.setState(false); }
+		// if ((present&4) >0) {buttonMag.setColorBackground(green_);} else {buttonMag.setColorBackground(red_); tMAGX.setState(false); tMAGY.setState(false); tMAGZ.setState(false); }
+		// if ((present&8) >0) {buttonGPS.setColorBackground(green_);} else {buttonGPS.setColorBackground(red_); tHEAD.setState(false);}
+		// if ((present&16)>0) {buttonSonar.setColorBackground(green_);} else {buttonSonar.setColorBackground(red_);}
+		// for(i=0;i<CHECKBOXITEMS;i++) {
+		//   if ((mode&(1<<i))>0) buttonCheckbox[i].setColorBackground(green_); else buttonCheckbox[i].setColorBackground(red_);
+		// }
+		/* Send Status */
+		mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->present,
+				mwiState->mode, 0, (mwiState->cycleTime / 10),
+				mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0,
+				serialBuffErrorsCount, mwiState->i2cError, mwiState->debug2,
+				mwiState->debug3, mwiState->debug4);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_RAW_IMU:
+		MW_TRACE("MSP_RAW_IMU")
+		stateMSP = 0;
+		mwiState->ax = read16();
+		mwiState->ay = read16();
+		mwiState->az = read16();
+		mwiState->gx = read16() / 8;
+		mwiState->gy = read16() / 8;
+		mwiState->gz = read16() / 8;
+		mwiState->magx = read16() / 3;
+		mwiState->magy = read16() / 3;
+		mwiState->magz = read16() / 3;
+		/* Send raw imu */
+		mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime, mwiState->ax,
+				mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy,
+				mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_SERVO:
+		MW_TRACE("MSP_SERVO")
+		stateMSP = 0;
+		for (i = 0; i < 8; i++)
+			mwiState->servo[i] = read16();
+		/* Send servo */
+		mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, 1,
+				mwiState->servo[0], mwiState->servo[1], mwiState->servo[2],
+				mwiState->servo[3], mwiState->servo[4], mwiState->servo[5],
+				mwiState->servo[6], mwiState->servo[7]);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_MOTOR:
+		MW_TRACE("MSP_MOTOR")
+		stateMSP = 0;
+		for (i = 0; i < 8; i++)
+			mwiState->mot[i] = read16();
+		break;
+
+	case MSP_RC:
+		MW_TRACE("MSP_RC")
+		stateMSP = 0;
+		mwiState->rcRoll = read16();
+		mwiState->rcPitch = read16();
+		mwiState->rcYaw = read16();
+		mwiState->rcThrottle = read16();
+		mwiState->rcAUX1 = read16();
+		mwiState->rcAUX2 = read16();
+		mwiState->rcAUX3 = read16();
+		mwiState->rcAUX4 = read16();
+		/* Send rcDate */
+		mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg, currentTime, 1,
+				mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle,
+				mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2,
+				mwiState->rcAUX3, mwiState->rcAUX4, 255);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_RAW_GPS:
+		// GPS_fix = read8();
+		// GPS_numSat = read8();
+		// GPS_latitude = read32();
+		// GPS_longitude = read32();
+		// GPS_altitude = read16();
+		// GPS_speed = read16();
+		MW_TRACE("MSP_RAW_GPS")
+		stateMSP = 0;
+		mwiState->GPS_fix = read8();
+		mwiState->GPS_numSat = read8();
+		// mwiState->GPS_latitude = read32();
+		// mwiState->GPS_longitude = read32();
+		// mwiState->GPS_altitude = read16();
+		// mwiState->GPS_speed = read16();
+		/* Send gps */
+		mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime,
+				mwiState->GPS_fix + 1, 48.0, 7.0, 100.0, 0, 0, 0, 0, 0);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_COMP_GPS:
+		// GPS_distanceToHome = read16();
+		// GPS_directionToHome = read16();
+		// GPS_update = read8();
+		MW_TRACE("MSP_COMP_GPS")
+		stateMSP = 0;
+		mwiState->GPS_distanceToHome = read16();
+		mwiState->GPS_directionToHome = read16();
+		mwiState->GPS_update = read8();
+		break;
+
+	case MSP_ATTITUDE:
+		MW_TRACE("MSP_ATTITUDE")
+		mwiState->angx = read16() / 10;
+		mwiState->angy = read16() / 10;
+		mwiState->head = read16();
+		/* Send attitude */
+		mavlink_msg_attitude_pack(mwiUavID, 200, &msg, currentTime,
+		deg2radian(mwiState->angx), -deg2radian(mwiState->angy),
+		deg2radian(mwiState->head), deg2radian(mwiState->gx),
+		deg2radian(mwiState->gy), deg2radian(mwiState->gz));
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_ALTITUDE:
+		MW_TRACE("MSP_ALTITUDE")
+		mwiState->baro = read32();
+		/* Send Local Position */
+		mavlink_msg_local_position_ned_pack(mwiUavID, 200, &msg, currentTime, 0,
+				0, 0, 0, 0, 0);
+		len = mavlink_msg_to_send_buffer(buf, &msg);
+		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
+				sizeof(struct sockaddr_in));
+
+		break;
+
+	case MSP_BAT: // TODO SEND
+		MW_TRACE("MSP_BAT")
+		mwiState->bytevbat = read8();
+		mwiState->pMeterSum = read16();
+		break;
+
+	case MSP_RC_TUNING:
+		MW_TRACE("MSP_RC_TUNING")
+		stateMSP = 0;
+		mwiState->byteRC_RATE = read8();
+		mwiState->byteRC_EXPO = read8();
+		mwiState->byteRollPitchRate = read8();
+		mwiState->byteYawRate = read8();
+		mwiState->byteDynThrPID = read8();
+
+		break;
+
+	case MSP_ACC_CALIBRATION:
+		MW_TRACE("MSP_ACC_CALIBRATION")
+		break;
+
+	case MSP_MAG_CALIBRATION:
+		MW_TRACE("MSP_MAG_CALIBRATION")
+		break;
+
+	case MSP_PID:
+		MW_TRACE("MSP_PID")
+		for (i = 0; i < PIDITEMS; i++) {
+			mwiState->byteP[i] = read8();
+			mwiState->byteI[i] = read8();
+			mwiState->byteD[i] = read8();
+			//   confP[i].setValue(byteP[i]/10.0);confI[i].setValue(byteI[i]/1000.0);confD[i].setValue(byteD[i]);
+			//   confP[i].setColorBackground(green_);
+			//   confI[i].setColorBackground(green_);
+			//   confD[i].setColorBackground(green_);
+		}
+
+		break;
+
+	case MSP_BOX:
+		MW_TRACE("MSP_BOX")
+		break;
+
+	case MSP_MISC: // TODO SEND
+		MW_TRACE("MSP_MISC")
+
+		break;
+
+	case MSP_MOTOR_PINS: // TODO SEND
+		MW_TRACE("MSP_MOTOR_PINS")
+		break;
+
+	case MSP_DEBUG:
+		MW_TRACE("MSP_DEBUG")
+		mwiState->debug1 = read16();
+		mwiState->debug2 = read16();
+		mwiState->debug3 = read16();
+		mwiState->debug4 = read16();
+		break;
+
+	case MSP_BOXNAMES:
+		MW_TRACE("MSP_BOXNAMES")
+		break;
+
+	case MSP_PIDNAMES:
+		MW_TRACE("MSP_PIDNAMES")
+		break;
+	}
+
+}
 
 int serialbuffer_processNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState) {
 	uint64_t currentTime = microsSinceEpoch();
 
 	int frameParsed = NOK;
 
-	// mavlink msg
-	int len =0;
-	uint8_t buf[BUFFER_LENGTH];
-	mavlink_message_t msg;
+	uint8_t input[1];
 
-	uint8_t c[1] = { };
-	int i;
-	static int offset;
-	static uint8_t dataSize;
+	while (serialport_readChar(serialPort, input)) {
 
-	while (serialport_readChar(serialPort, c)) {
+//		MW_TRACE(input)
+		switch (stateMSP) {
+		default:
+			// stateMSP is at an unknown value, but this cannot happen
+			// unless somebody introduces a bug.
+			// fall thru just in case.
+		case IDLE:
+			//			setState(MSP_HEAD1 == input ? HEADER_START : IDLE);
+			if (input[0] == MSP_HEAD1) {
 
-		if (stateMSP > 99) {
-			if (offset <= dataSize) {
-				if (offset < dataSize)
-					checksum ^=  c[0];
-				bufSerial[offset++] = c[0];
+				setState(HEADER_START);
 			} else {
 
-				if (checksum == (bufSerial[dataSize] & 0xff)) {
-
-					frameParsed++;
-
-					memset(buf, 0, BUFFER_LENGTH);
-					switch (stateMSP) {
-					case MSP_IDENT:
-						stateMSP = 0;
-						mwiState->version = read8();
-						mwiState->multiType = read8();
-						mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg,
-								MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC,
-								MAV_MODE_STABILIZE_ARMED, 0, MAV_STATE_ACTIVE);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-						identSended = OK;
-						break;
-
-					case MSP_STATUS:
-						stateMSP = 0;
-						mwiState->cycleTime = read16();
-						mwiState->i2cError = read16();
-						mwiState->present = read16();
-						mwiState->mode = read16();
-						// if ((present&1) >0) {buttonAcc.setColorBackground(green_);} else {buttonAcc.setColorBackground(red_);tACC_ROLL.setState(false); tACC_PITCH.setState(false); tACC_Z.setState(false);}
-						// if ((present&2) >0) {buttonBaro.setColorBackground(green_);} else {buttonBaro.setColorBackground(red_); tBARO.setState(false); }
-						// if ((present&4) >0) {buttonMag.setColorBackground(green_);} else {buttonMag.setColorBackground(red_); tMAGX.setState(false); tMAGY.setState(false); tMAGZ.setState(false); }
-						// if ((present&8) >0) {buttonGPS.setColorBackground(green_);} else {buttonGPS.setColorBackground(red_); tHEAD.setState(false);}
-						// if ((present&16)>0) {buttonSonar.setColorBackground(green_);} else {buttonSonar.setColorBackground(red_);}
-						// for(i=0;i<CHECKBOXITEMS;i++) {
-						//   if ((mode&(1<<i))>0) buttonCheckbox[i].setColorBackground(green_); else buttonCheckbox[i].setColorBackground(red_);
-						// }
-						/* Send Status */
-						mavlink_msg_sys_status_pack(mwiUavID, 200, &msg,
-								mwiState->present, mwiState->mode, 0,
-								(mwiState->cycleTime / 10), mwiState->bytevbat * 1000,
-								mwiState->pMeterSum, -1, 0, serialBuffErrorsCount,
-								mwiState->i2cError, mwiState->debug2, mwiState->debug3,
-								mwiState->debug4);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-						break;
-
-					case MSP_RAW_IMU:
-						stateMSP = 0;
-						mwiState->ax = read16();
-						mwiState->ay = read16();
-						mwiState->az = read16();
-						mwiState->gx = read16() / 8;
-						mwiState->gy = read16() / 8;
-						mwiState->gz = read16() / 8;
-						mwiState->magx = read16() / 3;
-						mwiState->magy = read16() / 3;
-						mwiState->magz = read16() / 3;
-						/* Send raw imu */
-						mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime,
-								mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx,
-								mwiState->gy, mwiState->gz, mwiState->magx,
-								mwiState->magy, mwiState->magz);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-						break;
-					case MSP_SERVO:
-						stateMSP = 0;
-						for (i = 0; i < 8; i++)
-							mwiState->servo[i] = read16();
-						/* Send servo */
-						mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg,
-								currentTime, 1, mwiState->servo[0], mwiState->servo[1],
-								mwiState->servo[2], mwiState->servo[3],
-								mwiState->servo[4], mwiState->servo[5],
-								mwiState->servo[6], mwiState->servo[7]);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-
-						break;
-					case MSP_MOTOR:
-						stateMSP = 0;
-						for (i = 0; i < 8; i++)
-							mwiState->mot[i] = read16();
-						break;
-					case MSP_RC:
-						stateMSP = 0;
-						mwiState->rcRoll = read16();
-						mwiState->rcPitch = read16();
-						mwiState->rcYaw = read16();
-						mwiState->rcThrottle = read16();
-						mwiState->rcAUX1 = read16();
-						mwiState->rcAUX2 = read16();
-						mwiState->rcAUX3 = read16();
-						mwiState->rcAUX4 = read16();
-						/* Send rcDate */
-						mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg,
-								currentTime, 1, mwiState->rcPitch, mwiState->rcRoll,
-								mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1,
-								mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4,
-								255);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-
-
-						break;
-
-					case MSP_RAW_GPS:
-						stateMSP = 0;
-						mwiState->GPS_fix = read8();
-						mwiState->GPS_numSat = read8();
-						// mwiState->GPS_latitude = read32();
-						// mwiState->GPS_longitude = read32();
-						// mwiState->GPS_altitude = read16();
-						// mwiState->GPS_speed = read16();
-						/* Send gps */
-						mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime,
-								mwiState->GPS_fix + 1, 48.0, 7.0, 100.0, 0, 0, 0, 0, 0);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-						break;
-						break;
-					case MSP_COMP_GPS:
-						stateMSP = 0;
-						mwiState->GPS_distanceToHome = read16();
-						mwiState->GPS_directionToHome = read16();
-						mwiState->GPS_update = read8();
-						break;
-					case MSP_ATTITUDE:
-						stateMSP = 0;
-						mwiState->angx = read16() / 10;
-						mwiState->angy = read16() / 10;
-						mwiState->head = read16();
-						/* Send attitude */
-						mavlink_msg_attitude_pack(mwiUavID, 200, &msg, currentTime,
-								deg2radian(mwiState->angx), -deg2radian(mwiState->angy),
-								deg2radian(mwiState->head), deg2radian(mwiState->gx),
-								deg2radian(mwiState->gy), deg2radian(mwiState->gz));
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-						break;
-
-					case MSP_ALTITUDE:
-						stateMSP = 0;
-						mwiState->baro = read32();
-						/* Send Local Position */
-						mavlink_msg_local_position_ned_pack(mwiUavID, 200, &msg,
-								currentTime, 0, 0, 0, 0, 0, 0);
-						len = mavlink_msg_to_send_buffer(buf, &msg);
-						sendto(sock, buf, len, 0,(struct sockaddr*) &groundStationAddr, sizeof(struct sockaddr_in));
-
-						break;
-					case MSP_BAT:
-						stateMSP = 0;
-						mwiState->bytevbat = read8();
-						mwiState->pMeterSum = read16();
-						break;
-					case MSP_RC_TUNING:
-						stateMSP = 0;
-						mwiState->byteRC_RATE = read8();
-						mwiState->byteRC_EXPO = read8();
-						mwiState->byteRollPitchRate = read8();
-						mwiState->byteYawRate = read8();
-						mwiState->byteDynThrPID = read8();
-						// mwiState->byteThrottle_MID = read8();mwiState->byteThrottle_EXPO = read8();
-						// confRC_RATE.setValue(byteRC_RATE/100.0);
-						// confRC_EXPO.setValue(byteRC_EXPO/100.0);
-						// rollPitchRate.setValue(byteRollPitchRate/100.0);
-						// yawRate.setValue(byteYawRate/100.0);
-						// dynamic_THR_PID.setValue(byteDynThrPID/100.0);
-						// throttle_MID.setValue(byteThrottle_MID/100.0);
-						// throttle_EXPO.setValue(byteThrottle_EXPO/100.0);
-						// confRC_RATE.setColorBackground(green_);confRC_EXPO.setColorBackground(green_);rollPitchRate.setColorBackground(green_);
-						// yawRate.setColorBackground(green_);dynamic_THR_PID.setColorBackground(green_);
-						// throttle_MID.setColorBackground(green_);throttle_EXPO.setColorBackground(green_);
-						break;
-					case MSP_ACC_CALIBRATION:
-						stateMSP = 0;
-						break;
-					case MSP_MAG_CALIBRATION:
-						stateMSP = 0;
-						break;
-					case MSP_PID:
-						stateMSP = 0;
-						for (i = 0; i < PIDITEMS; i++) {
-							mwiState->byteP[i] = read8();
-							mwiState->byteI[i] = read8();
-							mwiState->byteD[i] = read8();
-							//   confP[i].setValue(byteP[i]/10.0);confI[i].setValue(byteI[i]/1000.0);confD[i].setValue(byteD[i]);
-							//   confP[i].setColorBackground(green_);
-							//   confI[i].setColorBackground(green_);
-							//   confD[i].setColorBackground(green_);
-						}
-						break;
-						//		              case MSP_BOX:
-						// stateMSP = 0;
-						// for( i=0;i<CHECKBOXITEMS;i++) {
-						// 	mwiState->activation[i] = read16();
-						//   for(int aa=0;aa<6;aa++) {
-						//     if ((activation[i]&(1<<aa))>0)     checkbox1[i].activate(aa); else checkbox1[i].deactivate(aa);
-						//     if ((activation[i]&(1<<(aa+6)))>0) checkbox2[i].activate(aa); else checkbox2[i].deactivate(aa);
-						//   }
-						// } break;
-						//		              case MSP_MISC:
-						// stateMSP = 0;
-						// intPowerTrigger = read16();
-						// confPowerTrigger.setValue(intPowerTrigger); break;
-					case MSP_DEBUG:
-						stateMSP = 0;
-						mwiState->debug1 = read16();
-						mwiState->debug2 = read16();
-						mwiState->debug3 = read16();
-						mwiState->debug4 = read16();
-						break;
-					}
-				} else {
-					printf("Error Frame : %d\t", stateMSP);
-					printf("checksum = %d,\tbufSerial[dataSize] = %d\n",
-							checksum, bufSerial[dataSize]);
-					serialBuffErrorsCount++;
-
-
-				}
-				stateMSP = 0;
+				setState(IDLE);
 			}
-		}
+			break;
 
-		if (stateMSP < 5) {
-			if (stateMSP == 4) {
-				if (c[0] > 99) {
-					stateMSP = c[0];
-					offset = 0;
-					checksum = 0;
-					indx = 0;
+		case HEADER_START:
+			//		setState(MSP_HEAD2 == input ? HEADER_M : IDLE);
+			if (input[0] == MSP_HEAD2) {
+
+				setState(HEADER_M);
+			} else {
+
+				setState(IDLE);
+			}
+			break;
+
+		case HEADER_M:
+			//	setState(MSP_TO_FC == input ? HEADER_ARROW : IDLE);
+			if (input[0] == MSP_TO_FC) {
+				setState(HEADER_ARROW);
+			} else {
+				setState(IDLE);
+			}
+			break;
+
+		case HEADER_ARROW: // got arrow, expect dataSize now
+			// This is the count of bytes which follow AFTER the command
+			// byte which is next. +1 because we save() the cmd byte too, but
+			// it excludes the checksum
+
+			dataSize = input[0] + 1;
+
+			// reset index variables for save()
+			offset = 0;
+			checksum = input[0]; // same as: checksum = 0, checksum ^= input[0];
+
+			// the command is to follow
+			setState(HEADER_SIZE);
+			break;
+
+		case HEADER_SIZE: // got size, expect cmd now
+
+			checksum ^= input[0];
+
+			// pass the command byte to the ByteBuffer handler also
+			save(input[0]);
+			setState(HEADER_CMD);
+			break;
+
+		case HEADER_CMD: // got cmd, expect payload, if any, then checksum
+
+			if (offset < dataSize) {
+				// keep reading the payload in this state until offset==dataSize
+				checksum ^= input[0];
+				save(input[0]);
+
+				// stay in this state
+			} else {
+				// done reading, reset the decoder for next byte
+				setState(IDLE);
+
+				if ((checksum & MASK) != input[0]) {
+					MW_TRACE("checksum failed")
+
 				} else {
-					stateMSP = 0;
+					// Process the checksum verified command on the event
+					// dispatching
+					// thread. The checksum is omitted from ByteBuffer.
+					// Give up "buffer" to ByteBuffer, replace it below.
+
+//							DO PARSE
+					//SwingUtilities.invokeLater(new ByteBuffer(buffer, offset));
+
+					decode(mwiState);
+					// replace the buffer which we gave up to ByteBuffer
+//							buffer = new byte[BUFZ];
 				}
 			}
-			if (stateMSP == 3) {
-				if (c[0] < 100) {
-					stateMSP++;
-					dataSize = c[0];
-					if (dataSize > 63)
-						dataSize = 63;
-				} else {
-					stateMSP = c[0];
-				}
-			}
-
-			switch (c[0]) {
-			case '$':  //header detection
-				if (stateMSP == 0)
-					stateMSP++;
-				break;
-			case 'M':
-				if (stateMSP == 1)
-					stateMSP++;
-				break;
-			case '>':
-				if (stateMSP == 2)
-					stateMSP++;
-				break;
-			}
-
+			break;
 		}
 	}
 	//	printf("Total frame recieved : %i\n",nbFrameParsed);
@@ -773,10 +852,9 @@ int serialbuffer_processNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState) 
 	return frameParsed;
 }
 
-
 /* QNX timer version */
 #if (defined __QNX__) | (defined __QNXNTO__)
-uint64_t microsSinceEpoch(void){
+uint64_t microsSinceEpoch(void) {
 
 	struct timespec time;
 	uint64_t micros = 0;
@@ -805,12 +883,12 @@ void eexit(int code) {
 	CloseHandle(serialLink);
 	WSACleanup();
 #else
-	if (serialLink != NOK){
+	if (serialLink != NOK) {
 		close(serialLink);
 	}
 #endif
 
-	if (sock != NOK){
+	if (sock != NOK) {
 		close(sock);
 	}
 	exit(code);

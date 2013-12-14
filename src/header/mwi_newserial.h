@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -22,7 +21,6 @@
 
 #define MWI_FULLFRAME_SIZE 64
 
-
 #define   MSP_IDENT                100
 #define   MSP_STATUS               101
 #define   MSP_RAW_IMU              102
@@ -38,6 +36,9 @@
 #define   MSP_PID                  112
 #define   MSP_BOX                  113
 #define   MSP_MISC                 114
+#define   MSP_MOTOR_PINS           115
+#define   MSP_BOXNAMES             116
+#define   MSP_PIDNAMES             117
 
 #define   MSP_SET_RAW_RC           200
 #define   MSP_SET_RAW_GPS          201
@@ -53,15 +54,14 @@
 
 #define   MSP_DEBUG                254
 
-
 // fligh controler to ground station
 #define FC_TO_GS "$M>"
 
 // ground station to fligh controler
 #define GS_TO_FC "$M<"
 
-#define GS_TO_FC_CHAR1 '$'
-#define GS_TO_FC_CHAR2 'M'
-#define GS_TO_FC_CHAR3 '>'
-
+#define MSP_HEAD1 '$'
+#define MSP_HEAD2 'M'
+#define MSP_TO_FC '>'
+#define MSP_TO_GC '<'
 #endif

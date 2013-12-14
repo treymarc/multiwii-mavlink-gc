@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -20,10 +19,8 @@
 #ifndef MWI_OS_H
 #define MWI_OS_H
 
-
 #define MWI_FULLFRAME_ASK 'M'
 #define MWI_FULLFRAME_TAG 'M'
 #define MWI_FULLFRAME_SIZE 154
-
 
 #endif

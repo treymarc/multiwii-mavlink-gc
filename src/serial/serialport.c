@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -53,11 +52,17 @@ int serialport_writeChar(HANDLE fd, char b)
 int serialport_write(HANDLE fd, const char* str)
 
 {
+//int n=0;
+	int len = 6; //strlen(str);
+	printf("len : %i\n", len);
+	for (int j = 0; j < len; j++) {
+		printf(" %i:%02x\n", len, str[j]);
+// n += write(fd, str[j], 1);
 
-	int len = strlen(str);
+	}
 
 #if defined (_WINDOZ)
-	int n = serialport_writewin(fd,str,len);
+//	int n = serialport_writewin(fd,str,len);
 #else
 	int n = write(fd, str, len);
 #endif
@@ -81,7 +86,7 @@ int serialport_readChar(HANDLE fd, uint8_t* buf) {
 #endif
 
 	strcpy(buf, b);
-	return (n == 1) ;
+	return (n == 1);
 
 }
 
@@ -121,7 +126,7 @@ HANDLE serialport_init(const char* serialport, int baudrate) {
 #else // posix
 	struct termios toptions;
 
-	fd = open(serialport, O_RDWR | O_NOCTTY );
+	fd = open(serialport, O_RDWR | O_NOCTTY);
 
 	if (fd == -1) {
 		perror("init_serialport: Unable to open port ");

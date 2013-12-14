@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  Copyright (C) 2012  Trey Marc ( a t ) gmail.com
 
@@ -20,16 +19,13 @@
 #ifndef MWI_H
 #define MWI_H
 
-
-
 #define  CHECKBOXITEMS 11
 #define  PIDITEMS 8
-
 
 // mwi data
 typedef struct {
 
-	int present , mode ;
+	int present, mode;
 	int mot[8];
 	int servo[8];
 
@@ -47,7 +43,7 @@ typedef struct {
 	int PowerTrigger;
 	int bytevbat;
 
-	int rcThrottle , rcRoll , rcPitch , rcYaw , rcAUX1 , rcAUX2 , rcAUX3 , rcAUX4 ;
+	int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
 
 	int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
 	int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteYawRate, byteDynThrPID;
@@ -55,8 +51,5 @@ typedef struct {
 
 	int serialErrorsCount;
 } mwi_uav_state_t;
-
-
-
 
 #endif
