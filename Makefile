@@ -29,7 +29,7 @@ RM		:= rm -f
 
 all:
 
-EXTRA	:= 
-SRCDIRS	:=    src/serial src/udp $(EXTRA)
+EXTRA	:= src/example
+SRCDIRS	:=    src/serial src/mwgc $(EXTRA)
 
 include $(SRCDIRS:%=%/Module.mk)

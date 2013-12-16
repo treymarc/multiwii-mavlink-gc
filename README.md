@@ -3,6 +3,7 @@ multiwii-mavlink-gc
 
 Connecting Multiwii Flight Controler to QGroundControl  with mavlink
 
+Multiwii serial protocol decoding exemple in C
 
 Requirements :
 ===================
@@ -36,6 +37,7 @@ all Arch :
 Run :
 ===================
 
+
 in a terminal :
 	
 	run "mwgc --help" 
@@ -47,8 +49,6 @@ exemple :
 	
 	"mwgc.exe -s COM4 -ip 192.168.0.13"
 
-
-exemple :
 	
 WIN
 	
