@@ -7,7 +7,7 @@
 # (at your option) any later version.
 
 
-UART2UDP_SRC_DIR	:= src/udp
+UART2UDP_SRC_DIR	:= src/mwgc
 
 UART2UDP_SRC_CFLAGS	:=  
 
@@ -22,7 +22,7 @@ ifeq ($(WINBUILD),true)
 	WINOP := -lws2_32 
 endif
 
-$(UART2UDP_SRC_DIR)/mwgc: $(UART2UDP_SRC_DIR)/uart2udp.o  $(SERIAL_SRC_DIR)/serialport.o 
+$(UART2UDP_SRC_DIR)/mwgc: $(UART2UDP_SRC_DIR)/uart2udp.o  $(SERIAL_SRC_DIR)/serialport.o $(UART2UDP_SRC_DIR)/mwi.o
 	$(CC) $(UART2UDP_SRC_CFLAGS) $(LDFLAGS) -o $@ $^ $(WINOP)
 
 
@@ -30,9 +30,11 @@ $(UART2UDP_SRC_DIR)/mwgc: $(UART2UDP_SRC_DIR)/uart2udp.o  $(SERIAL_SRC_DIR)/seri
 # Objects
 #
 
-$(UART2UDP_SRC_DIR)/uart2udp.o: $(UART2UDP_SRC_DIR)/uart2udp.c 
+$(UART2UDP_SRC_DIR)/uart2udp.o: $(UART2UDP_SRC_DIR)/uart2udp.c  
 	$(CC) $(CFLAGS) $(UART2UDP_SRC_CFLAGS) -c $< -o $@
 
+$(UART2UDP_SRC_DIR)/mwi.o: $(UART2UDP_SRC_DIR)/mwi.c  
+	$(CC) $(CFLAGS) $(UART2UDP_SRC_CFLAGS) -c $< -o $@
 
 
 #
@@ -44,8 +46,9 @@ all-mwgc: $(addprefix $(UART2UDP_SRC_DIR)/,$(UART2UDP_SRC_TARGETS))
 
 
 clean-mwgc:
-	$(RM) $(addprefix $(UART2UDP_SRC_DIR)/,*.o $(UART2UDP_SRC_TARGETS))
-
+	$(RM)  $(UART2UDP_SRC_DIR)/*.o
+	$(RM)  $(UART2UDP_SRC_DIR)/mwgc  
+	
 
 all: all-mwgc
 

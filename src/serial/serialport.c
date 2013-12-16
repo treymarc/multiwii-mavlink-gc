@@ -16,8 +16,8 @@
 
  ****************************************************************************/
 
-#include "../header/utils.h"
-#include "../header/serial.h"
+#include "../include/utils.h"
+#include "serial.h"
 #include <stdint.h>
 
 #if defined( _WINDOZ )
@@ -57,7 +57,7 @@ int serialport_write(HANDLE fd, const char* str)
 	//int len = strlen(str);
 
 #if defined (_WINDOZ)
-//	int n = serialport_writewin(fd,str,len);
+	int n = serialport_writewin(fd,str,len);
 #else
 	int n = write(fd, str, len);
 #endif
@@ -81,6 +81,7 @@ int serialport_readChar(HANDLE fd, uint8_t* buf) {
 #endif
 
 	strcpy(buf, b);
+
 	return (n == 1);
 
 }
@@ -155,7 +156,7 @@ HANDLE serialport_init(const char* serialport, int baudrate) {
 	// apply options
 	if (tcsetattr(fd, TCSANOW, &toptions) < 0) {
 		perror("init_serialport: Couldn't set term attributes");
-		return -1;
+		return 0;
 	}
 #endif
 	return fd;

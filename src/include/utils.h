@@ -16,21 +16,55 @@
 
  ****************************************************************************/
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
+#ifndef MWI_UTILS_H
+#define MWI_UTILS_H
 
-#include "def.h"
+/*
+ * version
+ */
+#define MWGC_VERSION "SNAPSHOT-2013.12.14"
 
-#define SERIAL_DEFAULT_BAUDRATE 0
+/*
+ * log level
+ */
+#if !defined(_LOGLEVL)
+#define _LOGLEVL 0
+#endif
 
-HANDLE serialport_init(const char* serialport, int i);
+/*
+ * build specific
+ */
+#if defined( _WINDOZ )
+#include <Windows.h>
+#else
+typedef unsigned short HANDLE;
+#endif
 
-int serialport_writeChar(HANDLE fd, char b);
-int serialport_write(HANDLE fd, const char* str);
 
-int serialport_readChar(HANDLE fd, uint8_t* buf);
-int serialport_readUntil(HANDLE fd, char* buf, char until);
+/*
+ * logic
+ */
+#define NOK -1
+#define OK 1
 
+/*
+ * math
+ */
+#define PI 3.1415926535897932384626433832795
+#define deg2radian(X) (PI * X) / 180
+
+/*
+ * log
+ */
+#define MW_ERROR(x) printf(x);
+
+#if (_LOGLEVL>2)
+#define MW_INFO(x) printf(x);
+#define MW_TRACE(x) printf(x);
+#else
+#define MW_INFO(x);
+#define MW_TRACE(x);
+
+#endif
+
+#endif

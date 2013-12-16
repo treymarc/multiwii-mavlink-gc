@@ -16,28 +16,21 @@
 
  ****************************************************************************/
 
-#include "def.h"
-/*
- * logic
- */
-#define NOK -1
-#define OK 1
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-/*
- * math
- */
-#define PI 3.1415926535897932384626433832795
-#define deg2radian(X) (PI * X) / 180
+#include "../include/utils.h"
 
-/*
- * log
- */
-#define MW_ERROR(x) printf(x);
+#define SERIAL_DEFAULT_BAUDRATE 0
 
-#if (_LOGLEVL>2)
-#define MW_INFO(x) printf(x);
-#define MW_TRACE(x) printf(x);
-#else
-#define MW_INFO(x);
-#define MW_TRACE(x);
-#endif
+HANDLE serialport_init(const char* serialport, int i);
+
+int serialport_writeChar(HANDLE fd, char b);
+int serialport_write(HANDLE fd, const char* str);
+
+int serialport_readChar(HANDLE fd, uint8_t* buf);
+int serialport_readUntil(HANDLE fd, char* buf, char until);
+
