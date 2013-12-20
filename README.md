@@ -3,7 +3,7 @@ multiwii-mavlink-gc
 
 Connecting Multiwii Flight Controler to QGroundControl  with mavlink
 
-Multiwii serial protocol decoding exemple in C
+Multiwii serial protocol decoding exemple in C 
 
 Requirements :
 ===================

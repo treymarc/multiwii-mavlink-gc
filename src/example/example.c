@@ -1,7 +1,5 @@
 /*******************************************************************************
- derivative work from :
-
- Copyright (C) 2010  Bryan Godbolt godbolt ( a t ) ualberta.ca
+ Copyright (C) 2013  Trey Marc ( a t ) gmail.com
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,10 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
- -2012.04.29 : mwgc demo code
+ -2013.12.18 : demo code
 
  ****************************************************************************/
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -30,27 +27,19 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-#include "../mwgc/mwi.h"
+#include "../mwi/mwi.h"
 #include "../include/utils.h"
 
-//default value
-#define DEFAULT_SERIAL_DEV "/dev/ttyO2"
+HANDLE serialLink = NOK;
+int initOk = NOK;
 
-// global : serialPort
-HANDLE serialLink;
-
+void callBack_mwi(int state);
 
 int main(int argc, char* argv[]) {
 
-#if defined( _WINDOZ )
-	WSADATA WSAData;
-	WSAStartup(MAKEWORD(2,0), &WSAData);
-#endif
+	// serial devices "COM5" or /dev/ttyUSB0 ..
+	char serialDevice[256] = "";
 
-	// serail devices "COME5" or /dev/ttyUSB0 ..
-	char serialDevice[150];
-
-	strcpy(serialDevice, DEFAULT_SERIAL_DEV);
 	for (int i = 1; i < argc; i++) {
 		if (i + 1 != argc) {
 			if (strcmp(argv[i], "-s") == 0) {
@@ -58,121 +47,125 @@ int main(int argc, char* argv[]) {
 				i++;
 			}
 		}
-
 	}
 
 	MW_TRACE("starting..\n")
-	serialLink = 1;
 	serialLink = MWIserialbuffer_init(serialDevice);
 
 	if (serialLink <= 0) {
 		perror("error open serial");
-		return -1;
+		exit( EXIT_FAILURE );
 	}
 
-	// mwi state -
+	// mwi state
 	mwi_uav_state_t *mwiState;
 	mwiState = malloc(sizeof(*mwiState));
+	mwiState->callback = &callBack_mwi;
 
-
-	int initOk = NOK;
-	int state = 0;
+	uint64_t lastFrameRequest = 0;
+	uint64_t currentTime = microsSinceEpoch();
 
 	for (;;) {
 
-		if (initOk == OK) {
+		currentTime = microsSinceEpoch();
 
-			MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-			MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-			MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
-			MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-			MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-			MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-			MWIserialbuffer_askForFrame(serialLink, MSP_RC);
-			MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
-			MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-			MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-			MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
-			MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
-
-		} else {
-			MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+		if ((currentTime - lastFrameRequest) > 1000 * 30) {
+			if (initOk == OK) {
+				lastFrameRequest = currentTime;
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+				MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
+				MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+				MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
+				MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RC);
+				MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
+				MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
+				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+				MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+			} else {
+				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+			}
 		}
 
-		state = MWIserialbuffer_readNewFrames(serialLink, mwiState);
-
-		printf(" MSP : %i", state);
-
-		switch (state) {
-		case MSP_IDENT:
-			initOk = OK;
-			break;
-
-		case MSP_STATUS:
-			break;
-
-		case MSP_RAW_IMU:
-			break;
-
-		case MSP_SERVO:
-			break;
-
-		case MSP_MOTOR:
-			break;
-
-		case MSP_RC:
-			break;
-
-		case MSP_RAW_GPS:
-			break;
-
-		case MSP_COMP_GPS:
-			break;
-
-		case MSP_ATTITUDE:
-			break;
-
-		case MSP_ALTITUDE:
-			break;
-
-		case MSP_BAT:
-			break;
-
-		case MSP_RC_TUNING:
-			break;
-
-		case MSP_ACC_CALIBRATION:
-			break;
-
-		case MSP_MAG_CALIBRATION:
-			break;
-
-		case MSP_PID:
-			break;
-
-		case MSP_BOX:
-			break;
-
-		case MSP_MISC:
-			break;
-
-		case MSP_MOTOR_PINS:
-			break;
-
-		case MSP_DEBUG:
-			break;
-
-		case MSP_BOXNAMES:
-			break;
-
-		case MSP_PIDNAMES:
-			break;
-
-		case NOK:
-			break;
-		}
+		MWIserialbuffer_readNewFrames(serialLink, mwiState);
 
 		usleep(5000);
-
 	}
+}
+
+void callBack_mwi(int state) {
+
+	//  do something with the decode message
+
+	switch (state) {
+	case MSP_IDENT:
+		initOk = OK;
+		break;
+
+	case MSP_STATUS:
+		break;
+
+	case MSP_RAW_IMU:
+		break;
+
+	case MSP_SERVO:
+		break;
+
+	case MSP_MOTOR:
+		break;
+
+	case MSP_RC:
+		break;
+
+	case MSP_RAW_GPS:
+		break;
+
+	case MSP_COMP_GPS:
+		break;
+
+	case MSP_ATTITUDE:
+		break;
+
+	case MSP_ALTITUDE:
+		break;
+
+	case MSP_BAT:
+		break;
+
+	case MSP_RC_TUNING:
+		break;
+
+	case MSP_ACC_CALIBRATION:
+		break;
+
+	case MSP_MAG_CALIBRATION:
+		break;
+
+	case MSP_PID:
+		break;
+
+	case MSP_BOX:
+		break;
+
+	case MSP_MISC:
+		break;
+
+	case MSP_MOTOR_PINS:
+		break;
+
+	case MSP_DEBUG:
+		break;
+
+	case MSP_BOXNAMES:
+		break;
+
+	case MSP_PIDNAMES:
+		break;
+
+	case NOK:
+		break;
+	}
+
 }

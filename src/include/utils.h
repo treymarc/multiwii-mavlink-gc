@@ -15,6 +15,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
+#include <stdint.h>
 
 #ifndef MWI_UTILS_H
 #define MWI_UTILS_H
@@ -40,7 +41,6 @@
 typedef unsigned short HANDLE;
 #endif
 
-
 /*
  * logic
  */
@@ -52,6 +52,12 @@ typedef unsigned short HANDLE;
  */
 #define PI 3.1415926535897932384626433832795
 #define deg2radian(X) (PI * X) / 180
+
+/*
+ * time
+ */
+
+uint64_t microsSinceEpoch(void);
 
 /*
  * log

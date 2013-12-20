@@ -70,7 +70,7 @@ int serialport_write(HANDLE fd, const char* str)
 
 }
 
-int serialport_readChar(HANDLE fd, uint8_t* buf) {
+int serialport_readChar(HANDLE fd, char * buf) {
 	char b[1];
 	int n = 0;
 
