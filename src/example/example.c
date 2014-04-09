@@ -86,6 +86,7 @@ int main(int argc, char* argv[]) {
 				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
 			} else {
 				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+				MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE);
 			}
 		}
 
@@ -163,6 +164,9 @@ void callBack_mwi(int state) {
 
 	case MSP_PIDNAMES:
 		break;
+
+    case MSP_PRIVATE:
+        break;
 
 	case NOK:
 		break;

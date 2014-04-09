@@ -46,7 +46,7 @@ int MWIserialbuffer_init(const char* serialport) {
 }
 
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID) {
-
+    MW_TRACE(" MWIserialbuffer_askForFrame ")
 	char msg[6];
 	int hash = 0;
 	int payloadz = 0;
@@ -261,10 +261,10 @@ void decode(mwi_uav_state_t *mwiState) {
 
 	case MSP_DEBUG:
 		MW_TRACE("MSP_DEBUG")
-		mwiState->debug1 = read16();
-		mwiState->debug2 = read16();
-		mwiState->debug3 = read16();
-		mwiState->debug4 = read16();
+		for (i = 0; i < DEBUGITEMS; i++) {
+					mwiState->debug[i] = read16();
+				}
+
 		break;
 
 	case MSP_BOXNAMES:
@@ -275,6 +275,9 @@ void decode(mwi_uav_state_t *mwiState) {
 	case MSP_PIDNAMES:
 		MW_TRACE("MSP_PIDNAMES")
 		break;
+    case MSP_PRIVATE:
+        MW_TRACE("MSP_PRIVATE")
+        break;
 	}
 	mwiState->callback(recievedCmd);
 }

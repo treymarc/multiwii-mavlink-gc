@@ -20,9 +20,9 @@
 #ifndef MWI_NS_H
 #define MWI_NS_H
 
-#define  CHECKBOXITEMS 11
-#define  PIDITEMS 8
-
+#define CHECKBOXITEMS 11
+#define PIDITEMS 8
+#define DEBUGITEMS 4
 // mwi data
 typedef struct {
 
@@ -30,10 +30,11 @@ typedef struct {
 	int present, mode;
 	int mot[8];
 	int servo[8];
+	int debug[4];
 
 	int version;
-	int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy,
-			debug1, debug2, debug3, debug4;
+	int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy;
+
 	int GPS_distanceToHome, GPS_directionToHome;
 	int GPS_numSat, GPS_fix, GPS_update;
 	int time1, time2;
@@ -58,6 +59,8 @@ typedef struct {
 } mwi_uav_state_t;
 
 #define MWI_FULLFRAME_SIZE 64
+
+#define   MSP_PRIVATE                1
 
 #define   MSP_IDENT                100
 #define   MSP_STATUS               101
