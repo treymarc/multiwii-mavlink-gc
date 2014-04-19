@@ -1,6 +1,6 @@
 
 
-LOGLEV := 3
+LOGLEV :=3
 WINBUILD := false
 
 #WINBUILD := true

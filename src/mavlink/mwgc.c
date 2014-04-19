@@ -306,7 +306,7 @@ void callBack_mwi(int state) {
 				mwiState->mode, 0, (mwiState->cycleTime / 10),
 				mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0,
 				mwiState->serialErrorsCount, mwiState->i2cError,
-				mwiState->debug2, mwiState->debug3, mwiState->debug4);
+				mwiState->debug[0], mwiState->debug[0], mwiState->debug[0]);
 		len = mavlink_msg_to_send_buffer(buf, &msg);
 		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
 				sizeof(struct sockaddr_in));
@@ -423,25 +423,25 @@ void callBack_mwi(int state) {
 	case MSP_DEBUG:
 		/* Send Local Position */
 		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 1,
-				mwiState->debug1);
+				mwiState->debug[0]);
 		len = mavlink_msg_to_send_buffer(buf, &msg);
 		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
 				sizeof(struct sockaddr_in));
 
 		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 2,
-				mwiState->debug2);
+				mwiState->debug[1]);
 		len = mavlink_msg_to_send_buffer(buf, &msg);
 		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
 				sizeof(struct sockaddr_in));
 
 		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 3,
-				mwiState->debug3);
+				mwiState->debug[2]);
 		len = mavlink_msg_to_send_buffer(buf, &msg);
 		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
 				sizeof(struct sockaddr_in));
 
 		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 4,
-				mwiState->debug4);
+				mwiState->debug[3]);
 		len = mavlink_msg_to_send_buffer(buf, &msg);
 		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
 				sizeof(struct sockaddr_in));

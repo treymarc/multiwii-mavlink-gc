@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 	uint64_t currentTime = microsSinceEpoch();
 
 	printf(
-			"currentTime;angx;angy;head;ax;ay;az;gx;gy;gz;magx;magy;magz;mot[0];mot[1];mot[2];mot[3];mot[4];mot[5];rcRoll;rcPitch;rcYaw;rcThrottle;rcAUX1;rcAUX2;rcAUX3;rcAUX4;debug1;debug2;debug3;debug4\n");
+			"currentTime;angx;angy;head;ax;ay;az;gx;gy;gz;magx;magy;magz;mot[0];mot[1];mot[2];mot[3];mot[4];mot[5];rcRoll;rcPitch;rcYaw;rcThrottle;rcAUX1;rcAUX2;rcAUX3;rcAUX4;debug1;debug2;debug3;debug4;debug5;debug6;debug7\n");
 
 	for (;;) {
 
@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
 
 				mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw,
 				mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2,
-				mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug1,
-				mwiState->debug2, mwiState->debug3, mwiState->debug4);
+				mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0],
+				mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
 		usleep(5000);
 	}
 }

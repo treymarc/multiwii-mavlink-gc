@@ -54,13 +54,19 @@ typedef struct {
 
 	int serialErrorsCount;
 
+	int privateVersion, privateValueCount;
 	void (*callback)(int);
 
 } mwi_uav_state_t;
 
-#define MWI_FULLFRAME_SIZE 64
+#define   MWI_FULLFRAME_SIZE 64
 
 #define   MSP_PRIVATE                1
+
+#define   MSP_PRIVATE_VERSION      0
+#define   MSP_PRIVATE_INFO         0      //out message         get the msp_private_version (uint8) and the value count (uint8)
+#define   MSP_PRIVATE_GET          1      //out message         get the value (uint8)
+#define   MSP_PRIVATE_SET          2      //in message          set the value (uint8)
 
 #define   MSP_IDENT                100
 #define   MSP_STATUS               101
@@ -105,6 +111,7 @@ typedef struct {
 #define MSP_HEAD2 'M'
 #define MSP_TO_FC '>'
 #define MSP_TO_GC '<'
+#define MSP_ERROR '!'
 
 // serial impl mwi.c
 // mwi binary protocol
