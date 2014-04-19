@@ -26,47 +26,40 @@
 // mwi data
 typedef struct {
 
-	char boxnames[256];
-	int present, mode;
-	int mot[8];
-	int servo[8];
-	int debug[4];
+    char boxnames[256];
+    int present, mode;
+    int mot[8];
+    int servo[8];
+    int debug[4];
 
-	int version;
-	int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy;
+    int version;
+    int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy;
 
-	int GPS_distanceToHome, GPS_directionToHome;
-	int GPS_numSat, GPS_fix, GPS_update;
-	int time1, time2;
-	int cycleTime, i2cError;
-	int nunchukPresent, i2cAccPresent, i2cBaroPresent, i2cMagnetoPresent,
-			GPSPresent, levelMode;
-	int multiType; // 1 for tricopter, 2 for quad+, 3 for quadX, ...
-	int pMeterSum;
-	int PowerTrigger;
-	int bytevbat;
+    int GPS_distanceToHome, GPS_directionToHome;
+    int GPS_numSat, GPS_fix, GPS_update;
+    int time1, time2;
+    int cycleTime, i2cError;
+    int nunchukPresent, i2cAccPresent, i2cBaroPresent, i2cMagnetoPresent, GPSPresent, levelMode;
+    int multiType; // 1 for tricopter, 2 for quad+, 3 for quadX, ...
+    int pMeterSum;
+    int PowerTrigger;
+    int bytevbat;
 
-	int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
+    int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
 
-	int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
-	int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteYawRate, byteDynThrPID;
-	int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
+    int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
+    int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteYawRate, byteDynThrPID;
+    int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
 
-	int serialErrorsCount;
+    int serialErrorsCount;
 
-	int privateVersion, privateValueCount;
-	void (*callback)(int);
+    void (*callback)(int);
 
 } mwi_uav_state_t;
 
 #define   MWI_FULLFRAME_SIZE 64
 
 #define   MSP_PRIVATE                1
-
-#define   MSP_PRIVATE_VERSION      0
-#define   MSP_PRIVATE_INFO         0      //out message         get the msp_private_version (uint8) and the value count (uint8)
-#define   MSP_PRIVATE_GET          1      //out message         get the value (uint8)
-#define   MSP_PRIVATE_SET          2      //in message          set the value (uint8)
 
 #define   MSP_IDENT                100
 #define   MSP_STATUS               101

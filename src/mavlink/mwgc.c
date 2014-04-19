@@ -94,369 +94,325 @@ SOCKET sock;
 short mwiUavID;
 struct sockaddr_in groundStationAddr;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
 #if defined( _WINDOZ )
-	WSADATA WSAData;
-	WSAStartup(MAKEWORD(2,0), &WSAData);
+    WSADATA WSAData;
+    WSAStartup(MAKEWORD(2,0), &WSAData);
 #endif
 
-	char targetIp[150];
-	char serialDevice[150];
+    char targetIp[150];
+    char serialDevice[150];
 
-	mwiUavID = DEFAULT_UAVID;
-	strcpy(serialDevice, DEFAULT_SERIAL_DEV);
-	strcpy(targetIp, DEFAULT_IP_GS);
+    mwiUavID = DEFAULT_UAVID;
+    strcpy(serialDevice, DEFAULT_SERIAL_DEV);
+    strcpy(targetIp, DEFAULT_IP_GS);
 
-	//	TODO set serialBaudRate for slow serial link;
+    //	TODO set serialBaudRate for slow serial link;
 
-	uint8_t udpInBuf[BUFFER_LENGTH];
-	struct sockaddr_in locAddr;
+    uint8_t udpInBuf[BUFFER_LENGTH];
+    struct sockaddr_in locAddr;
 
-	ssize_t recsize;
-	socklen_t fromlen;
+    ssize_t recsize;
+    socklen_t fromlen;
 
-	// Check if --help flag was used
-	if ((argc == 2) && (strcmp(argv[1], "--help") == 0)) {
-		rtfmHelp();
-	}
+    // Check if --help flag was used
+    if ((argc == 2) && (strcmp(argv[1], "--help") == 0)) {
+        rtfmHelp();
+    }
 
-	// Check if --version flag was used
-	if ((argc == 2) && (strcmp(argv[1], "--version") == 0)) {
-		rtfmVersion();
-	}
+    // Check if --version flag was used
+    if ((argc == 2) && (strcmp(argv[1], "--version") == 0)) {
+        rtfmVersion();
+    }
 
-	// parse flag : -ip , -s , -id
-	for (int i = 1; i < argc; i++) {
-		if (i + 1 != argc) {
-			if (strcmp(argv[i], "-ip") == 0) {
-				strcpy(targetIp, argv[i + 1]);
-				i++;
-			} else if (strcmp(argv[i], "-s") == 0) {
-				strcpy(serialDevice, argv[i + 1]);
-				i++;
-			} else if (strcmp(argv[i], "-id") == 0) {
-				mwiUavID = atoi(argv[i + 1]);
-				i++;
-			}
-		}
+    // parse flag : -ip , -s , -id
+    for (int i = 1; i < argc; i++) {
+        if (i + 1 != argc) {
+            if (strcmp(argv[i], "-ip") == 0) {
+                strcpy(targetIp, argv[i + 1]);
+                i++;
+            } else if (strcmp(argv[i], "-s") == 0) {
+                strcpy(serialDevice, argv[i + 1]);
+                i++;
+            } else if (strcmp(argv[i], "-id") == 0) {
+                mwiUavID = atoi(argv[i + 1]);
+                i++;
+            }
+        }
 
-	}
+    }
 
-	printf("ground station ip: %s\n", targetIp);
-	printf("serial link: %s\n", serialDevice);
-	printf("uav id: %i\n", mwiUavID);
+    printf("ground station ip: %s\n", targetIp);
+    printf("serial link: %s\n", serialDevice);
+    printf("uav id: %i\n", mwiUavID);
 
-	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-	memset(&locAddr, 0, sizeof(locAddr));
-	locAddr.sin_family = AF_INET;
-	locAddr.sin_addr.s_addr = INADDR_ANY;
-	locAddr.sin_port = htons(14551);
+    memset(&locAddr, 0, sizeof(locAddr));
+    locAddr.sin_family = AF_INET;
+    locAddr.sin_addr.s_addr = INADDR_ANY;
+    locAddr.sin_port = htons(14551);
 
-	/* Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol */
-	if (NOK
-			== bind(sock, (struct sockaddr *) &locAddr,
-					sizeof(struct sockaddr))) {
-		perror("error bind failed");
-		eexit(EXIT_FAILURE);
-	}
+    /* Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol */
+    if (NOK == bind(sock, (struct sockaddr *)&locAddr, sizeof(struct sockaddr))) {
+        perror("error bind failed");
+        eexit(EXIT_FAILURE);
+    }
 
-	/* Attempt to make it non blocking */
+    /* Attempt to make it non blocking */
 #if defined(_WINDOZ)
 
-	int arg = 1;
-	if(ioctlsocket(sock, FIONBIO, &arg )<0) {
-		fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
-		eexit(EXIT_FAILURE);
-	}
+    int arg = 1;
+    if(ioctlsocket(sock, FIONBIO, &arg )<0) {
+        fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
+        eexit(EXIT_FAILURE);
+    }
 
 #else
 
-	if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
-		fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
-		close(sock);
-		eexit(EXIT_FAILURE);
-	}
+    if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
+        fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
+        close(sock);
+        eexit(EXIT_FAILURE);
+    }
 
 #endif
 
-	memset(&groundStationAddr, 0, sizeof(groundStationAddr));
-	groundStationAddr.sin_family = AF_INET;
-	groundStationAddr.sin_addr.s_addr = inet_addr(targetIp);
-	groundStationAddr.sin_port = htons(14550);
+    memset(&groundStationAddr, 0, sizeof(groundStationAddr));
+    groundStationAddr.sin_family = AF_INET;
+    groundStationAddr.sin_addr.s_addr = inet_addr(targetIp);
+    groundStationAddr.sin_port = htons(14550);
 
-	serialLink = MWIserialbuffer_init(serialDevice);
+    serialLink = MWIserialbuffer_init(serialDevice);
 
-	if (serialLink <= 0) {
-		perror("error open serial");
-		eexit(EXIT_FAILURE);
-	}
+    if (serialLink <= 0) {
+        perror("error open serial");
+        eexit(EXIT_FAILURE);
+    }
 
-	// init mwi state
-	mwiState = malloc(sizeof(*mwiState));
-	mwiState->mode = MAV_MODE_PREFLIGHT; // initial mode is unknow
-	mwiState->callback = &callBack_mwi;
+    // init mwi state
+    mwiState = malloc(sizeof(*mwiState));
+    mwiState->mode = MAV_MODE_PREFLIGHT; // initial mode is unknow
+    mwiState->callback = &callBack_mwi;
 
-	MW_TRACE("starting..\n")
+    MW_TRACE("starting..\n")
 
-	uint64_t lastFrameRequest = 0;
-	uint64_t lastHeartBeat = 0;
-	uint64_t currentTime = microsSinceEpoch();
-	//int state = NOK;
+    uint64_t lastFrameRequest = 0;
+    uint64_t lastHeartBeat = 0;
+    uint64_t currentTime = microsSinceEpoch();
+    //int state = NOK;
 
-	for (;;) {
-		//MW_TRACE("beginloop\n")
+    for (;;) {
+        //MW_TRACE("beginloop\n")
 
-		currentTime = microsSinceEpoch();
+        currentTime = microsSinceEpoch();
 
-		if ((currentTime - lastFrameRequest) > 1000 * 30) {
+        if ((currentTime - lastFrameRequest) > 1000 * 30) {
 
-			if (identSended == OK) {
-				lastFrameRequest = currentTime;
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-				MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-				MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RC);
-				MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
-				MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+            if (identSended == OK) {
+                lastFrameRequest = currentTime;
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
+                MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RC);
+                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
 
-				if ((currentTime - lastHeartBeat) > 1000 * 500) {
-					lastHeartBeat = currentTime;
-					MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
-				}
+                if ((currentTime - lastHeartBeat) > 1000 * 500) {
+                    lastHeartBeat = currentTime;
+                    MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+                }
 
-			} else {
-				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
-			}
-			//TODO
-			//MSP_MOTOR
-			//MSP_COMP_GPS
-			//MSP_BAT
-			//MSP_DEBUG
+            } else {
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+            }
+            //TODO
+            //MSP_MOTOR
+            //MSP_COMP_GPS
+            //MSP_BAT
+            //MSP_DEBUG
 
-		}
+        }
 
-		MWIserialbuffer_readNewFrames(serialLink, mwiState);
+        MWIserialbuffer_readNewFrames(serialLink, mwiState);
 
-		//  udp in
-		memset(udpInBuf, 0, BUFFER_LENGTH);
+        //  udp in
+        memset(udpInBuf, 0, BUFFER_LENGTH);
 
-		recsize = recvfrom(sock, (void *) udpInBuf, BUFFER_LENGTH, 0,
-				(struct sockaddr *) &groundStationAddr, &fromlen);
+        recsize = recvfrom(sock, (void *)udpInBuf, BUFFER_LENGTH, 0, (struct sockaddr *)&groundStationAddr, &fromlen);
 
-		if (recsize > 0) {
-			MW_TRACE("\n")MW_TRACE(" <-- udp in <--\n")
-			// Something received - print out all bytes and parse packet
-			mavlink_message_t msgIn;
-			mavlink_status_t status;
-			unsigned int temp = 0;
-			printf("Bytes Received: %d\nDatagram: ", (int) recsize);
-			for (int i = 0; i < recsize; ++i) {
-				temp = udpInBuf[i];
-				printf("%02x ", (unsigned char) temp);
-				if (mavlink_parse_char(MAVLINK_COMM_0, udpInBuf[i], &msgIn,
-						&status)) {
-					// Packet received
-					printf(
-							"\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n",
-							msgIn.sysid, msgIn.compid, msgIn.len, msgIn.msgid);
-				}
-			}
+        if (recsize > 0) {
+            MW_TRACE("\n")MW_TRACE(" <-- udp in <--\n")
+            // Something received - print out all bytes and parse packet
+            mavlink_message_t msgIn;
+            mavlink_status_t status;
+            unsigned int temp = 0;
+            printf("Bytes Received: %d\nDatagram: ", (int)recsize);
+            for (int i = 0; i < recsize; ++i) {
+                temp = udpInBuf[i];
+                printf("%02x ", (unsigned char)temp);
+                if (mavlink_parse_char(MAVLINK_COMM_0, udpInBuf[i], &msgIn, &status)) {
+                    // Packet received
+                    printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", msgIn.sysid, msgIn.compid, msgIn.len, msgIn.msgid);
+                }
+            }
 
-		}
+        }
 
-		// no need to rush
-		usleep(5000);
-		//MW_TRACE("endloop\n")
-	}
+        // no need to rush
+        usleep(5000);
+        //MW_TRACE("endloop\n")
+    }
 }
 
-void callBack_mwi(int state) {
-	// mavlink msg
-	int len = 0;
-	uint8_t buf[BUFFER_LENGTH];
-	mavlink_message_t msg;
+void callBack_mwi(int state)
+{
+    // mavlink msg
+    int len = 0;
+    uint8_t buf[BUFFER_LENGTH];
+    mavlink_message_t msg;
 
-	uint64_t currentTime = microsSinceEpoch();
+    uint64_t currentTime = microsSinceEpoch();
 
-	switch (state) {
-	case MSP_IDENT:
+    switch (state) {
+        case MSP_IDENT:
 
-		mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR,
-				MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, MAV_STATE_ACTIVE);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+            mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, MAV_STATE_ACTIVE);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		identSended = OK;
+            identSended = OK;
 
-		break;
+            break;
 
-	case MSP_STATUS:
+        case MSP_STATUS:
 
-		/* Send Status */
-		mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->present,
-				mwiState->mode, 0, (mwiState->cycleTime / 10),
-				mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0,
-				mwiState->serialErrorsCount, mwiState->i2cError,
-				mwiState->debug[0], mwiState->debug[0], mwiState->debug[0]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+            /* Send Status */
+            mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->present, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0, mwiState->serialErrorsCount, mwiState->i2cError, 0, 0, 0);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_RAW_IMU:
+        case MSP_RAW_IMU:
 
-		/* Send raw imu */
+            /* Send raw imu */
 
-		mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime, mwiState->ax,
-				mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy,
-				mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+            mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime, mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_SERVO:
-		/* Send servo */
-		mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, 1,
-				mwiState->servo[0], mwiState->servo[1], mwiState->servo[2],
-				mwiState->servo[3], mwiState->servo[4], mwiState->servo[5],
-				mwiState->servo[6], mwiState->servo[7]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+        case MSP_SERVO:
+            /* Send servo */
+            mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->servo[0], mwiState->servo[1], mwiState->servo[2], mwiState->servo[3], mwiState->servo[4], mwiState->servo[5], mwiState->servo[6], mwiState->servo[7]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_MOTOR:
-		mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, 2,
-				mwiState->mot[0], mwiState->mot[1], mwiState->mot[2],
-				mwiState->mot[3], mwiState->mot[4], mwiState->mot[5],
-				mwiState->mot[6], mwiState->mot[7]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+        case MSP_MOTOR:
+            mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, 2, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5], mwiState->mot[6], mwiState->mot[7]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_RC:
-		/* Send rcDate */
-		mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg, currentTime, 1,
-				mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle,
-				mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2,
-				mwiState->rcAUX3, mwiState->rcAUX4, 255);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+        case MSP_RC:
+            /* Send rcDate */
+            mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, 255);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_RAW_GPS:
-		/* Send gps */
-		mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime,
-				mwiState->GPS_fix + 1, 48.0, 7.0, 100.0, 0, 0, 0, 0, 0);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+        case MSP_RAW_GPS:
+            /* Send gps */
+            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, 48.0, 7.0, 100.0, 0, 0, 0, 0, 0);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		break;
+            break;
 
-	case MSP_COMP_GPS:
-		break;
+        case MSP_COMP_GPS:
+            break;
 
-	case MSP_ATTITUDE:
-		/* Send attitude */
-		mavlink_msg_attitude_pack(mwiUavID, 200, &msg, currentTime, 
-		deg2radian(mwiState->angx), -deg2radian(mwiState->angy), 
-		deg2radian(mwiState->head), 
-		deg2radian(mwiState->gx), 
-		deg2radian(mwiState->gy), 
-		deg2radian(mwiState->gz));
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
-		break;
+        case MSP_ATTITUDE:
+            /* Send attitude */
+            mavlink_msg_attitude_pack(mwiUavID, 200, &msg, currentTime, deg2radian(mwiState->angx), -deg2radian(mwiState->angy), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy), deg2radian(mwiState->gz));
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            break;
 
-	case MSP_ALTITUDE:
-		/* Send Local Position */
-		mavlink_msg_local_position_ned_pack(mwiUavID, 200, &msg, currentTime, 0,
-				0, 0, 0, 0, 0);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
-		break;
+        case MSP_ALTITUDE:
+            /* Send Local Position */
+            mavlink_msg_local_position_ned_pack(mwiUavID, 200, &msg, currentTime, 0, 0, 0, 0, 0, 0);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            break;
 
-	case MSP_BAT: // TODO SEND
-		break;
+        case MSP_BAT: // TODO SEND
+            break;
 
-	case MSP_RC_TUNING:
-		break;
+        case MSP_RC_TUNING:
+            break;
 
-	case MSP_ACC_CALIBRATION:
-		break;
+        case MSP_ACC_CALIBRATION:
+            break;
 
-	case MSP_MAG_CALIBRATION:
-		break;
+        case MSP_MAG_CALIBRATION:
+            break;
 
-	case MSP_PID:
-		break;
+        case MSP_PID:
+            break;
 
-	case MSP_BOX:
-		break;
+        case MSP_BOX:
+            break;
 
-	case MSP_MISC: // TODO SEND
-		break;
+        case MSP_MISC: // TODO SEND
+            break;
 
-	case MSP_MOTOR_PINS: // TODO SEND
-		break;
+        case MSP_MOTOR_PINS: // TODO SEND
+            break;
 
-	case MSP_DEBUG:
-		/* Send Local Position */
-		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 1,
-				mwiState->debug[0]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+        case MSP_DEBUG:
+            /* Send Local Position */
+            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->debug[0]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 2,
-				mwiState->debug[1]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 2, mwiState->debug[1]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 3,
-				mwiState->debug[2]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
+            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 3, mwiState->debug[2]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-		mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 4,
-				mwiState->debug[3]);
-		len = mavlink_msg_to_send_buffer(buf, &msg);
-		sendto(sock, buf, len, 0, (struct sockaddr*) &groundStationAddr,
-				sizeof(struct sockaddr_in));
-		break;
+            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 4, mwiState->debug[3]);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            break;
 
-	case MSP_BOXNAMES:
-		break;
+        case MSP_BOXNAMES:
+            break;
 
-	case MSP_PIDNAMES:
+        case MSP_PIDNAMES:
 
-		break;
-	case NOK:
+            break;
+        case NOK:
 
-		break;
-	}
+            break;
+    }
 }
 ////--
 //void handleMessage(mavlink_message_t* currentMsg) {
@@ -578,59 +534,63 @@ void callBack_mwi(int state) {
 //}
 ////--
 
-void eexit(int code) {
+void eexit(int code)
+{
 
 #if defined( _WINDOZ)
-	CloseHandle(serialLink);
-	WSACleanup();
+    CloseHandle(serialLink);
+    WSACleanup();
 #else
-	if (serialLink > 0) {
-		close(serialLink);
-	}
+    if (serialLink > 0) {
+        close(serialLink);
+    }
 #endif
 
-	if (sock != NOK) {
-		close(sock);
-	}
-	exit(code);
+    if (sock != NOK) {
+        close(sock);
+    }
+    exit(code);
 }
 
-void rtfmVersion(void) {
-	printf("\n\nVersion: ");
-	printf(MWGC_VERSION);
-	printf("\n\n");
-	eexit(EXIT_SUCCESS);
+void rtfmVersion(void)
+{
+    printf("\n\nVersion: ");
+    printf(MWGC_VERSION);
+    printf("\n\n");
+    eexit(EXIT_SUCCESS);
 
 }
 
-void rtfmHelp(void) {
-	printf("\n");
-	printf("\n\nmwgc - serial 2 udp");
-	printf("\n");
-	printf("\nUsage:\n\n");
+void rtfmHelp(void)
+{
+    printf("\n");
+    printf("\n\nmwgc - serial 2 udp");
+    printf("\n");
+    printf("\nUsage:\n\n");
 
-	printf("\t -ip <ip address of QGroundControl>\n");
-	printf("\t  default value : 127.0.0.1\n\n");
-	printf("\t -s <serial device name>\n");
-	printf("\t  default value : /dev/ttyO2\n\n");
-	printf("\t -id <id for mavlink>\n");
-	printf("\t  default value : 1\n\n");
+    printf("\t -ip <ip address of QGroundControl>\n");
+    printf("\t  default value : 127.0.0.1\n\n");
+    printf("\t -s <serial device name>\n");
+    printf("\t  default value : /dev/ttyO2\n\n");
+    printf("\t -id <id for mavlink>\n");
+    printf("\t  default value : 1\n\n");
 
-	printf("\n");
-	printf("\nOptions:\n\n");
+    printf("\n");
+    printf("\nOptions:\n\n");
 
-	printf("\t--help");
-	printf("\t  display this message\n\n");
-	printf("\t --version");
-	printf("\t  show version number\n\n");
+    printf("\t--help");
+    printf("\t  display this message\n\n");
+    printf("\t --version");
+    printf("\t  show version number\n\n");
 
-	eexit(EXIT_SUCCESS);
+    eexit(EXIT_SUCCESS);
 }
 
-void rtfmArgvErr(char* argv) {
-	printf("\n");
-	printf("\nInvalides arguments : %s\n", argv);
-	printf("\n\nUsages : mwgc --help");
-	printf("\n\n");
+void rtfmArgvErr(char* argv)
+{
+    printf("\n");
+    printf("\nInvalides arguments : %s\n", argv);
+    printf("\n\nUsages : mwgc --help");
+    printf("\n\n");
 
 }

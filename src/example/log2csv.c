@@ -36,86 +36,78 @@ mwi_uav_state_t *mwiState;
 
 void callBack_mwi(int state);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
-	// serial devices "COM5" or /dev/ttyUSB0 ..
-	char serialDevice[256] = "";
+    // serial devices "COM5" or /dev/ttyUSB0 ..
+    char serialDevice[256] = "";
 
-	for (int i = 1; i < argc; i++) {
-		if (i + 1 != argc) {
-			if (strcmp(argv[i], "-s") == 0) {
-				strcpy(serialDevice, argv[i + 1]);
-				i++;
-			}
-		}
-	}
+    for (int i = 1; i < argc; i++) {
+        if (i + 1 != argc) {
+            if (strcmp(argv[i], "-s") == 0) {
+                strcpy(serialDevice, argv[i + 1]);
+                i++;
+            }
+        }
+    }
 
-	MW_TRACE("starting..\n")
-	serialLink = MWIserialbuffer_init(serialDevice);
+    MW_TRACE("starting..\n")
+    serialLink = MWIserialbuffer_init(serialDevice);
 
-	if (serialLink <= 0) {
-		perror("error open serial");
-		exit(EXIT_FAILURE);
-	}
+    if (serialLink <= 0) {
+        perror("error open serial");
+        exit(EXIT_FAILURE);
+    }
 
-	// mwi state
-	mwiState = malloc(sizeof(*mwiState));
-	mwiState->callback = &callBack_mwi;
+    // mwi state
+    mwiState = malloc(sizeof(*mwiState));
+    mwiState->callback = &callBack_mwi;
 
-	uint64_t lastFrameRequest = 0;
-	uint64_t currentTime = microsSinceEpoch();
+    uint64_t lastFrameRequest = 0;
+    uint64_t currentTime = microsSinceEpoch();
 
-	printf(
-			"currentTime;angx;angy;head;ax;ay;az;gx;gy;gz;magx;magy;magz;mot[0];mot[1];mot[2];mot[3];mot[4];mot[5];rcRoll;rcPitch;rcYaw;rcThrottle;rcAUX1;rcAUX2;rcAUX3;rcAUX4;debug1;debug2;debug3;debug4;debug5;debug6;debug7\n");
+    printf("currentTime;angx;angy;head;ax;ay;az;gx;gy;gz;magx;magy;magz;mot[0];mot[1];mot[2];mot[3];mot[4];mot[5];rcRoll;rcPitch;rcYaw;rcThrottle;rcAUX1;rcAUX2;rcAUX3;rcAUX4;debug1;debug2;debug3;debug4\n");
 
-	for (;;) {
+    for (;;) {
 
-		currentTime = microsSinceEpoch();
+        currentTime = microsSinceEpoch();
 
-		if ((currentTime - lastFrameRequest) > 1000 * 30) {
-			if (initOk == OK) {
-				lastFrameRequest = currentTime;
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-				MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-				MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RC);
-				MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
-				MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
-			} else {
-				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
-			}
-		}
+        if ((currentTime - lastFrameRequest) > 1000 * 30) {
+            if (initOk == OK) {
+                lastFrameRequest = currentTime;
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
+                MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RC);
+                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+            } else {
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+            }
+        }
 
-		MWIserialbuffer_readNewFrames(serialLink, mwiState);
-		printf(
-				"%ju;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n",
-				currentTime, mwiState->angx, mwiState->angy, mwiState->head,
+        MWIserialbuffer_readNewFrames(serialLink, mwiState);
+        printf("%ju;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n", currentTime, mwiState->angx, mwiState->angy, mwiState->head,
 
-				mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx,
-				mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy,
-				mwiState->magz, mwiState->mot[0], mwiState->mot[1],
-				mwiState->mot[2], mwiState->mot[3], mwiState->mot[4],
-				mwiState->mot[5],
+        mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5],
 
-				mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw,
-				mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2,
-				mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0],
-				mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
-		usleep(5000);
-	}
+        mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw, mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
+        usleep(5000);
+    }
 }
 
-void callBack_mwi(int state) {
-	switch (state) {
-	case MSP_IDENT:
-		initOk = OK;
-		break;
-	}
+void callBack_mwi(int state)
+{
+    switch (state) {
+        case MSP_IDENT:
+            initOk = OK;
+            break;
+    }
 
 }

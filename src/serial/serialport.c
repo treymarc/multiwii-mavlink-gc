@@ -36,16 +36,16 @@ int serialport_writeChar(HANDLE fd, char b)
 {
 
 #if defined (_WINDOZ)
-	int n = serialport_writewin(fd,b,1);
+    int n = serialport_writewin(fd,b,1);
 #else
-	int n = write(fd, &b, 1);
+    int n = write(fd, &b, 1);
 #endif
 
-	if (n != 1)
+    if (n != 1)
 
-		return -1;
+        return -1;
 
-	return 0;
+    return 0;
 
 }
 
@@ -53,113 +53,116 @@ int serialport_write(HANDLE fd, const char* str)
 
 {
 
-	int len = 6;
-	//int len = strlen(str);
+    int len = 6;
+    //int len = strlen(str);
 
 #if defined (_WINDOZ)
-	int n = serialport_writewin(fd,str,len);
+    int n = serialport_writewin(fd,str,len);
 #else
-	int n = write(fd, str, len);
+    int n = write(fd, str, len);
 #endif
 
-	if (n != len)
+    if (n != len)
 
-		return -1;
+        return -1;
 
-	return n;
+    return n;
 
 }
 
-int serialport_readChar(HANDLE fd, char * buf) {
-	char b[1];
-	int n = 0;
+int serialport_readChar(HANDLE fd, char * buf)
+{
+    char b[1];
+    int n = 0;
 
 #if defined (_WINDOZ)
-	n =serialport_readwin(fd,b, 1);
+    n =serialport_readwin(fd,b, 1);
 #else
-	n = read(fd, b, 1);
+    n = read(fd, b, 1);
 #endif
 
-	strcpy(buf, b);
+    strcpy(buf, b);
 
-	return (n == 1);
+    return (n == 1);
 
 }
 
-int serialport_readUntil(HANDLE fd, char* buf, char until) {
-	char b[1];
-	int i = 0;
+int serialport_readUntil(HANDLE fd, char* buf, char until)
+{
+    char b[1];
+    int i = 0;
 
-	do {
+    do {
 
 #if defined (_WINDOZ)
-		int n =serialport_readwin(fd,b, 1);
+        int n =serialport_readwin(fd,b, 1);
 #else
-		int n = read(fd, b, 1); // read a char at a time
+        int n = read(fd, b, 1); // read a char at a time
 #endif
-		if (n == -1)
-			return -1; // couldn't read
+        if (n == -1)
+            return -1; // couldn't read
 
-		if (n == 0) {
-			usleep(10 * 1000); // wait 10 msec try again
-			continue;
-		}
+        if (n == 0) {
+            usleep(10 * 1000); // wait 10 msec try again
+            continue;
+        }
 
-		buf[i] = b[0];
-		i++;
+        buf[i] = b[0];
+        i++;
 
-	} while (b[0] != until);
+    } while (b[0] != until);
 
-	buf[i] = 0; // null terminate the string
-	return i;
+    buf[i] = 0; // null terminate the string
+    return i;
 
 }
 
-HANDLE serialport_init(const char* serialport, int baudrate) {
-	int fd;
+HANDLE serialport_init(const char* serialport, int baudrate)
+{
+    int fd;
 #if defined( _WINDOZ ) // win
-	fd = serialport_initWin(serialport);
+    fd = serialport_initWin(serialport);
 #else // posix
-	struct termios toptions;
+    struct termios toptions;
 
-	fd = open(serialport, O_RDWR | O_NOCTTY);
+    fd = open(serialport, O_RDWR | O_NOCTTY);
 
-	if (fd == -1) {
-		perror("init_serialport: Unable to open port ");
-		return -1;
-	}
+    if (fd == -1) {
+        perror("init_serialport: Unable to open port ");
+        return -1;
+    }
 
-	if (tcgetattr(fd, &toptions) < 0) {
-		perror("init_serialport: Couldn't get term attributes");
-		return -1;
-	}
+    if (tcgetattr(fd, &toptions) < 0) {
+        perror("init_serialport: Couldn't get term attributes");
+        return -1;
+    }
 
-	// serial port default baud 115200 ,
-	if (baudrate != SERIAL_DEFAULT_BAUDRATE) {
-		cfsetispeed(&toptions, baudrate);
-		cfsetospeed(&toptions, baudrate);
-	} else {
-		cfsetispeed(&toptions, B115200);
-		cfsetospeed(&toptions, B115200);
-	}
+    // serial port default baud 115200 ,
+    if (baudrate != SERIAL_DEFAULT_BAUDRATE) {
+        cfsetispeed(&toptions, baudrate);
+        cfsetospeed(&toptions, baudrate);
+    } else {
+        cfsetispeed(&toptions, B115200);
+        cfsetospeed(&toptions, B115200);
+    }
 
-	// set parity8N1
-	toptions.c_cflag &= ~PARENB;
-	toptions.c_cflag &= ~CSTOPB;
-	toptions.c_cflag &= ~CSIZE;
-	toptions.c_cflag |= CS8;
+    // set parity8N1
+    toptions.c_cflag &= ~PARENB;
+    toptions.c_cflag &= ~CSTOPB;
+    toptions.c_cflag &= ~CSIZE;
+    toptions.c_cflag |= CS8;
 
-	// see: http://unixwiz.net/techtips/termios-vmin-vtime.html
-	toptions.c_cc[VMIN] = 0;
-	toptions.c_cc[VTIME] = 0;
+    // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
+    toptions.c_cc[VMIN] = 0;
+    toptions.c_cc[VTIME] = 0;
 
-	// apply options
-	if (tcsetattr(fd, TCSANOW, &toptions) < 0) {
-		perror("init_serialport: Couldn't set term attributes");
-		return 0;
-	}
+    // apply options
+    if (tcsetattr(fd, TCSANOW, &toptions) < 0) {
+        perror("init_serialport: Couldn't set term attributes");
+        return 0;
+    }
 #endif
-	return fd;
+    return fd;
 }
 
 //win
@@ -169,94 +172,94 @@ HANDLE serialport_init(const char* serialport, int baudrate) {
 HANDLE serialport_initWin(const char *portName)
 {
 
-	//Try to open device
-	HANDLE fd = CreateFile(portName,
-			GENERIC_READ | GENERIC_WRITE,
-			0,
-			NULL,
-			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL);
+    //Try to open device
+    HANDLE fd = CreateFile(portName,
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL);
 
-	//Check if the connection was successfull
-	if(fd==INVALID_HANDLE_VALUE)
-	{
-		//If not success full display an Error
+    //Check if the connection was successfull
+    if(fd==INVALID_HANDLE_VALUE)
+    {
+        //If not success full display an Error
 
-		perror("ERROR: Handle was not attached. \n");
-		return -1;
+        perror("ERROR: Handle was not attached. \n");
+        return -1;
 
-	}
+    }
 
-	//If connected we try to set the comm parameters
-	DCB dcbSerialParams = {0};
+    //If connected we try to set the comm parameters
+    DCB dcbSerialParams = {0};
 
-	//Try to get the current
-	if (!GetCommState(fd, &dcbSerialParams)) {
-		//If impossible, show an error
-		MW_TRACE("failed to get current serial parameters!");
-		return -1;
-	}
+    //Try to get the current
+    if (!GetCommState(fd, &dcbSerialParams)) {
+        //If impossible, show an error
+        MW_TRACE("failed to get current serial parameters!");
+        return -1;
+    }
 
-	//Define serial connection parameters for the arduino board
-	dcbSerialParams.BaudRate=CBR_115200;
-	dcbSerialParams.ByteSize=8;
-	dcbSerialParams.StopBits=ONESTOPBIT;
-	dcbSerialParams.Parity=NOPARITY;
+    //Define serial connection parameters for the arduino board
+    dcbSerialParams.BaudRate=CBR_115200;
+    dcbSerialParams.ByteSize=8;
+    dcbSerialParams.StopBits=ONESTOPBIT;
+    dcbSerialParams.Parity=NOPARITY;
 
-	//Set the parameters and check for their proper application
-	if(!SetCommState(fd, &dcbSerialParams)) {
-		perror("ALERT: Could not set Serial Port parameters");
-		return -1;
+    //Set the parameters and check for their proper application
+    if(!SetCommState(fd, &dcbSerialParams)) {
+        perror("ALERT: Could not set Serial Port parameters");
+        return -1;
 
-	}
-	Sleep(1000);
+    }
+    Sleep(1000);
 
-	return fd;
+    return fd;
 }
 
 int serialport_readwin(HANDLE fd,char *buffer, unsigned int nbChar)
 {
-	DWORD bytesRead;
-	unsigned int toRead;
-	COMSTAT status;
-	DWORD errors;
+    DWORD bytesRead;
+    unsigned int toRead;
+    COMSTAT status;
+    DWORD errors;
 
-	//Use the ClearCommError function to get status info on the Serial port
-	ClearCommError(fd, &errors, &status);
+    //Use the ClearCommError function to get status info on the Serial port
+    ClearCommError(fd, &errors, &status);
 
-	//Check if there is something to read
-	if(status.cbInQue>0) {
-		//If there is we check if there is enough data to read the required number
-		//of characters, if not we'll read only the available characters to prevent
-		//locking of the application.
-		if(status.cbInQue>nbChar) {
-			toRead = nbChar;
-		} else {
-			toRead = status.cbInQue;
-		}
+    //Check if there is something to read
+    if(status.cbInQue>0) {
+        //If there is we check if there is enough data to read the required number
+        //of characters, if not we'll read only the available characters to prevent
+        //locking of the application.
+        if(status.cbInQue>nbChar) {
+            toRead = nbChar;
+        } else {
+            toRead = status.cbInQue;
+        }
 
-		//Try to read the require number of chars, and return the number of read bytes on success
-		if(ReadFile(fd, buffer, toRead, &bytesRead, NULL) && bytesRead != 0) {
-			return bytesRead;
-		}
-	}
-	//If nothing has been read, or that an error was detected return -1
-	return -1;
+        //Try to read the require number of chars, and return the number of read bytes on success
+        if(ReadFile(fd, buffer, toRead, &bytesRead, NULL) && bytesRead != 0) {
+            return bytesRead;
+        }
+    }
+    //If nothing has been read, or that an error was detected return -1
+    return -1;
 }
 
 serialport_writewin(HANDLE fd,char *buffer, unsigned int nbChar)
 {
-	DWORD bytesSend;
-	COMSTAT status;
-	DWORD errors;
-	//Try to write the buffer on the Serial port
-	if(!WriteFile(fd, (void *)buffer, nbChar, &bytesSend, 0)) {
-		//In case it don't work get comm error and return false
-		ClearCommError(fd, &errors, &status);
-		return -1;
-	} else {
-		return nbChar;
-	}
+    DWORD bytesSend;
+    COMSTAT status;
+    DWORD errors;
+    //Try to write the buffer on the Serial port
+    if(!WriteFile(fd, (void *)buffer, nbChar, &bytesSend, 0)) {
+        //In case it don't work get comm error and return false
+        ClearCommError(fd, &errors, &status);
+        return -1;
+    } else {
+        return nbChar;
+    }
 }
 #endif

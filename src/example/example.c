@@ -35,141 +35,143 @@ int initOk = NOK;
 
 void callBack_mwi(int state);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
-	// serial devices "COM5" or /dev/ttyUSB0 ..
-	char serialDevice[256] = "";
+    // serial devices "COM5" or /dev/ttyUSB0 ..
+    char serialDevice[256] = "";
 
-	for (int i = 1; i < argc; i++) {
-		if (i + 1 != argc) {
-			if (strcmp(argv[i], "-s") == 0) {
-				strcpy(serialDevice, argv[i + 1]);
-				i++;
-			}
-		}
-	}
+    for (int i = 1; i < argc; i++) {
+        if (i + 1 != argc) {
+            if (strcmp(argv[i], "-s") == 0) {
+                strcpy(serialDevice, argv[i + 1]);
+                i++;
+            }
+        }
+    }
 
-	MW_TRACE("starting..\n")
-	serialLink = MWIserialbuffer_init(serialDevice);
+    MW_TRACE("starting..\n")
+    serialLink = MWIserialbuffer_init(serialDevice);
 
-	if (serialLink <= 0) {
-		perror("error open serial");
-		exit( EXIT_FAILURE );
-	}
+    if (serialLink <= 0) {
+        perror("error open serial");
+        exit(EXIT_FAILURE);
+    }
 
-	// mwi state
-	mwi_uav_state_t *mwiState;
-	mwiState = malloc(sizeof(*mwiState));
-	mwiState->callback = &callBack_mwi;
+    // mwi state
+    mwi_uav_state_t *mwiState;
+    mwiState = malloc(sizeof(*mwiState));
+    mwiState->callback = &callBack_mwi;
 
-	uint64_t lastFrameRequest = 0;
-	uint64_t currentTime = microsSinceEpoch();
+    uint64_t lastFrameRequest = 0;
+    uint64_t currentTime = microsSinceEpoch();
 
-	for (;;) {
+    for (;;) {
 
-		currentTime = microsSinceEpoch();
+        currentTime = microsSinceEpoch();
 
-		if ((currentTime - lastFrameRequest) > 1000 * 30) {
-			if (initOk == OK) {
-				lastFrameRequest = currentTime;
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-				MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-				MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RC);
-				MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
-				MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-				MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-				MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
-				MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
-			} else {
-				MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
-				MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE);
-			}
-		}
+        if ((currentTime - lastFrameRequest) > 1000 * 30) {
+            if (initOk == OK) {
+                lastFrameRequest = currentTime;
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
+                MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RC);
+                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
+                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+            } else {
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE);
+            }
+        }
 
-		MWIserialbuffer_readNewFrames(serialLink, mwiState);
+        MWIserialbuffer_readNewFrames(serialLink, mwiState);
 
-		usleep(5000);
-	}
+        usleep(5000);
+    }
 }
 
-void callBack_mwi(int state) {
+void callBack_mwi(int state)
+{
 
-	//  do something with the decode message
+    //  do something with the decode message
 
-	switch (state) {
-	case MSP_IDENT:
-		initOk = OK;
-		break;
+    switch (state) {
+        case MSP_IDENT:
+            initOk = OK;
+            break;
 
-	case MSP_STATUS:
-		break;
+        case MSP_STATUS:
+            break;
 
-	case MSP_RAW_IMU:
-		break;
+        case MSP_RAW_IMU:
+            break;
 
-	case MSP_SERVO:
-		break;
+        case MSP_SERVO:
+            break;
 
-	case MSP_MOTOR:
-		break;
+        case MSP_MOTOR:
+            break;
 
-	case MSP_RC:
-		break;
+        case MSP_RC:
+            break;
 
-	case MSP_RAW_GPS:
-		break;
+        case MSP_RAW_GPS:
+            break;
 
-	case MSP_COMP_GPS:
-		break;
+        case MSP_COMP_GPS:
+            break;
 
-	case MSP_ATTITUDE:
-		break;
+        case MSP_ATTITUDE:
+            break;
 
-	case MSP_ALTITUDE:
-		break;
+        case MSP_ALTITUDE:
+            break;
 
-	case MSP_BAT:
-		break;
+        case MSP_BAT:
+            break;
 
-	case MSP_RC_TUNING:
-		break;
+        case MSP_RC_TUNING:
+            break;
 
-	case MSP_ACC_CALIBRATION:
-		break;
+        case MSP_ACC_CALIBRATION:
+            break;
 
-	case MSP_MAG_CALIBRATION:
-		break;
+        case MSP_MAG_CALIBRATION:
+            break;
 
-	case MSP_PID:
-		break;
+        case MSP_PID:
+            break;
 
-	case MSP_BOX:
-		break;
+        case MSP_BOX:
+            break;
 
-	case MSP_MISC:
-		break;
+        case MSP_MISC:
+            break;
 
-	case MSP_MOTOR_PINS:
-		break;
+        case MSP_MOTOR_PINS:
+            break;
 
-	case MSP_DEBUG:
-		break;
+        case MSP_DEBUG:
+            break;
 
-	case MSP_BOXNAMES:
-		break;
+        case MSP_BOXNAMES:
+            break;
 
-	case MSP_PIDNAMES:
-		break;
+        case MSP_PIDNAMES:
+            break;
 
-    case MSP_PRIVATE:
-        break;
+        case MSP_PRIVATE:
+            break;
 
-	case NOK:
-		break;
-	}
+        case NOK:
+            break;
+    }
 
 }
