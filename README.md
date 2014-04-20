@@ -3,7 +3,9 @@ multiwii-mavlink-gc
 
 Connecting Multiwii Flight Controler to QGroundControl  with mavlink
 
-Multiwii serial protocol decoding exemple in C 
+Multiwii serial protocol decoding exemple in C
+
+Multiwii serial protocol to csv  
 
 Requirements :
 ===================
@@ -26,7 +28,7 @@ Build from source :
 	
 Windows only :
 	
-	uncomment the line "WINBUILD := true" in the Makefile 
+	$ make WINBUILD=true 
 	
 all Arch :
 

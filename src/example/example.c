@@ -45,14 +45,14 @@ int main(int argc, char* argv[])
     MW_TRACE("starting..\n")
     serialLink = MWIserialbuffer_init(serialDevice);
 
-    if (serialLink <= 0) {
-        perror("error open serial");
+    if (serialLink == NOK) {
+        perror("error opening serial port");
         exit(EXIT_FAILURE);
     }
 
     // mwi state
     mwi_uav_state_t *mwiState;
-    mwiState = malloc(sizeof(*mwiState));
+    mwiState = calloc(sizeof(*mwiState),sizeof(*mwiState));
     mwiState->callback = &callBack_mwi;
 
     uint64_t lastFrameRequest = 0;

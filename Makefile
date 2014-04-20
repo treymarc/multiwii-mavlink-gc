@@ -1,8 +1,6 @@
 
 
 LOGLEV :=3
-WINBUILD := false
-
 #WINBUILD := true
 
 
@@ -10,6 +8,12 @@ WINBUILD := false
 
 ifeq ($(WINBUILD),true)
 DWIN := -D_WINDOZ
+RM := erase
+PATH_SEP := \\
+EXE_SUFIX := .exe
+else
+RM := rm -r
+PATH_SEP := /
 endif
 
 CC	?= gcc
@@ -20,13 +24,12 @@ CFLAGS	+= $(DWIN) -D_LOGLEVL=$(LOGLEV) -D_GNU_SOURCE -Wall -Wstrict-prototypes -
 		   -Wcast-align -Wwrite-strings -Wnested-externs -Winline \
 		   -W -Wundef -Wmissing-prototypes 
 
-RM		:= rm -f
 
 .PHONY: all clean 
 
 all:
 
-EXTRA	:= src/example src/mavlink
-SRCDIRS	:= src/serial src/mwi $(EXTRA)
+EXTRA	:= src$(PATH_SEP)example src$(PATH_SEP)mavlink
+SRCDIRS	:= src$(PATH_SEP)serial src$(PATH_SEP)mwi $(EXTRA)
 
-include $(SRCDIRS:%=%/Module.mk)
+include $(SRCDIRS:%=%$(PATH_SEP)Module.mk)

@@ -6,9 +6,9 @@
 # (at your option) any later version.
 
 
-SERIAL_SRC_DIR	:= src/serial
+SERIAL_SRC_DIR	:= src$(PATH_SEP)serial
 
-$(SERIAL_SRC_DIR)/serialport.o: $(SERIAL_SRC_DIR)/serialport.c  
+$(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o: $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.c  
 	$(CC) $(CFLAGS) $(SERIAL_SRC_CFLAGS) -c $<  -o $@
 
 
@@ -19,11 +19,11 @@ $(SERIAL_SRC_DIR)/serialport.o: $(SERIAL_SRC_DIR)/serialport.c
 # Commands
 #
 
-all-serial: $(SERIAL_SRC_DIR)/serialport.o 
+all-serial: $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o 
 
 
 clean-serial:
-	$(RM)  $(SERIAL_SRC_DIR)/*.o 
+	$(RM)  $(SERIAL_SRC_DIR)$(PATH_SEP)*.o 
 
 
 all: all-serial

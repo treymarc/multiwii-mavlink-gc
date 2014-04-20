@@ -42,7 +42,7 @@ typedef unsigned short HANDLE;
 /*
  * logic
  */
-#define NOK -1
+#define NOK 0
 #define OK 1
 
 /*

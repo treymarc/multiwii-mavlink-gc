@@ -1,3 +1,20 @@
+/*******************************************************************************
+ Copyright (C) 2012  Trey Marc ( a t ) gmail.com
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ****************************************************************************/
 #include <sys/time.h>
 #include <string.h>
 #include "../include/utils.h"
@@ -29,7 +46,7 @@ void setState(int aState);
 
 void decode(mwi_uav_state_t *mwiState);
 
-int MWIserialbuffer_init(const char* serialport)
+HANDLE MWIserialbuffer_init(const char* serialport)
 {
     return serialport_init(serialport, SERIAL_DEFAULT_BAUDRATE);
 }
@@ -64,7 +81,7 @@ void save(int aByte)
     if (writeindex < BLENGTH) {
         frame[writeindex++] = aByte;
     } else {
-        MW_TRACE(" whoops ")
+        MW_TRACE(" serial buffer overrun \n ")
     }
 }
 
@@ -105,13 +122,13 @@ void decode(mwi_uav_state_t *mwiState)
 
     switch (recievedCmd) {
         case MSP_IDENT:
-            MW_TRACE("MSP_IDENT")
+            MW_TRACE("MSP_IDENT\n")
             mwiState->version = read8();
             mwiState->multiType = read8();
             break;
 
         case MSP_STATUS:
-            MW_TRACE("MSP_STATUS")
+            MW_TRACE("MSP_STATUS\n")
             mwiState->cycleTime = read16();
             mwiState->i2cError = read16();
             mwiState->present = read16();
@@ -128,7 +145,7 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_RAW_IMU:
-            MW_TRACE("MSP_RAW_IMU")
+            MW_TRACE("MSP_RAW_IMU\n")
             mwiState->ax = read16();
             mwiState->ay = read16();
             mwiState->az = read16();
@@ -141,19 +158,19 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_SERVO:
-            MW_TRACE("MSP_SERVO")
+            MW_TRACE("MSP_SERVO\n")
             for (i = 0; i < 8; i++)
                 mwiState->servo[i] = read16();
             break;
 
         case MSP_MOTOR:
-            MW_TRACE("MSP_MOTOR")
+            MW_TRACE("MSP_MOTOR\n")
             for (i = 0; i < 8; i++)
                 mwiState->mot[i] = read16();
             break;
 
         case MSP_RC:
-            MW_TRACE("MSP_RC")
+            MW_TRACE("MSP_RC\n")
             mwiState->rcRoll = read16();
             mwiState->rcPitch = read16();
             mwiState->rcYaw = read16();
@@ -171,7 +188,7 @@ void decode(mwi_uav_state_t *mwiState)
             // GPS_longitude = read32();
             // GPS_altitude = read16();
             // GPS_speed = read16();
-            MW_TRACE("MSP_RAW_GPS")
+            MW_TRACE("MSP_RAW_GPS\n")
             mwiState->GPS_fix = read8();
             mwiState->GPS_numSat = read8();
             // mwiState->GPS_latitude = read32();
@@ -185,32 +202,32 @@ void decode(mwi_uav_state_t *mwiState)
             // GPS_distanceToHome = read16();
             // GPS_directionToHome = read16();
             // GPS_update = read8();
-            MW_TRACE("MSP_COMP_GPS")
+            MW_TRACE("MSP_COMP_GPS\n")
             mwiState->GPS_distanceToHome = read16();
             mwiState->GPS_directionToHome = read16();
             mwiState->GPS_update = read8();
             break;
 
         case MSP_ATTITUDE:
-            MW_TRACE("MSP_ATTITUDE")
+            MW_TRACE("MSP_ATTITUDEv")
             mwiState->angx = read16() / 10;
             mwiState->angy = read16() / 10;
             mwiState->head = read16();
             break;
 
         case MSP_ALTITUDE:
-            MW_TRACE("MSP_ALTITUDE")
+            MW_TRACE("MSP_ALTITUDE\n")
             mwiState->baro = read32();
             break;
 
         case MSP_BAT: // TODO SEND
-            MW_TRACE("MSP_BAT")
+            MW_TRACE("MSP_BAT\n")
             mwiState->bytevbat = read8();
             mwiState->pMeterSum = read16();
             break;
 
         case MSP_RC_TUNING:
-            MW_TRACE("MSP_RC_TUNING")
+            MW_TRACE("MSP_RC_TUNING\n")
             mwiState->byteRC_RATE = read8();
             mwiState->byteRC_EXPO = read8();
             mwiState->byteRollPitchRate = read8();
@@ -219,15 +236,15 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_ACC_CALIBRATION:
-            MW_TRACE("MSP_ACC_CALIBRATION")
+            MW_TRACE("MSP_ACC_CALIBRATION\n")
             break;
 
         case MSP_MAG_CALIBRATION:
-            MW_TRACE("MSP_MAG_CALIBRATION")
+            MW_TRACE("MSP_MAG_CALIBRATION\n")
             break;
 
         case MSP_PID:
-            MW_TRACE("MSP_PID")
+            MW_TRACE("MSP_PID\n")
             for (i = 0; i < PIDITEMS; i++) {
                 mwiState->byteP[i] = read8();
                 mwiState->byteI[i] = read8();
@@ -240,34 +257,34 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_BOX:
-            MW_TRACE("MSP_BOX")
+            MW_TRACE("MSP_BOX\n")
             break;
 
         case MSP_MISC: // TODO SEND
-            MW_TRACE("MSP_MISC")
+            MW_TRACE("MSP_MISC\n")
             break;
 
         case MSP_MOTOR_PINS: // TODO SEND
-            MW_TRACE("MSP_MOTOR_PINS")
+            MW_TRACE("MSP_MOTOR_PINS\n")
             break;
 
         case MSP_DEBUG:
-            MW_TRACE("MSP_DEBUG")
+            MW_TRACE("MSP_DEBUG\n")
             for (i = 0; i < DEBUGITEMS; i++) {
                 mwiState->debug[i] = read16();
             }
             break;
 
         case MSP_BOXNAMES:
-            MW_TRACE("MSP_BOXNAMES")
+            MW_TRACE("MSP_BOXNAMES\n")
             strcpy(mwiState->boxnames, frame);
             break;
 
         case MSP_PIDNAMES:
-            MW_TRACE("MSP_PIDNAMES")
+            MW_TRACE("MSP_PIDNAMES\n")
             break;
         case MSP_PRIVATE:
-            MW_TRACE("MSP_PRIVATE")
+            MW_TRACE("MSP_PRIVATE\n")
             break;
     }
     mwiState->callback(recievedCmd);
@@ -275,14 +292,12 @@ void decode(mwi_uav_state_t *mwiState)
 
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
 {
-//	uint8_t cmd = NOK; // incoming commande
     uint8_t readbuffer[1]; //
     uint8_t checksum = 0; //
     uint8_t dataSize = 0; // size of the incoming payload
 
     while (serialport_readChar(serialPort, (char *)readbuffer)) {
-        //MW_TRACE(input)
-        //printf("%i",input[0]);
+
         switch (stateMSP) {
             default:
                 // stateMSP is at an unknown value, but this cannot happen
@@ -345,7 +360,7 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                     // done reading, reset the decoder for next byte
                     setState(IDLE);
                     if ((checksum & MASK) != readbuffer[0]) {
-                        MW_TRACE("checksum failed")
+                        MW_TRACE("msp checksum failed\n")
                         mwiState->serialErrorsCount += 1;
                     } else {
                         decode(mwiState);

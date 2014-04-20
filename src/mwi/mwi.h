@@ -111,7 +111,7 @@ typedef struct {
 // mwi binary protocol
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
-int MWIserialbuffer_init(const char* serialport);
+HANDLE MWIserialbuffer_init(const char* serialport);
 uint64_t microsSinceEpoch(void);
 
 #endif

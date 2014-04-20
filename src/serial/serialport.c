@@ -25,10 +25,9 @@
 
 #if defined( _WINDOZ )
 
-HANDLE serialport_initWin(const char *portName);
-serialport_writewin(HANDLE fd,char *buffer, unsigned int nbChar);
-
-int serialport_readwin(HANDLE fd,char *buffer, unsigned int nbChar);
+HANDLE serialport_initWin(const char* portName, int baudrate);
+int serialport_writewin(HANDLE fd, char* buffer, unsigned int nbChar);
+int serialport_readwin(HANDLE fd, char* buffer, unsigned int nbChar);
 
 #else
 #include <termios.h>
@@ -38,7 +37,7 @@ int serialport_writeChar(HANDLE fd, char b)
 {
 
 #if defined (_WINDOZ)
-    int n = serialport_writewin(fd,b,1);
+    int n = serialport_writewin(fd, &b, 1);
 #else
     int n = write(fd, &b, 1);
 #endif
@@ -48,13 +47,13 @@ int serialport_writeChar(HANDLE fd, char b)
     return 0;
 }
 
-int serialport_write(HANDLE fd, const char* str)
+int serialport_write(HANDLE fd, char* str)
 {
     int len = 6;
     //int len = strlen(str);
 
 #if defined (_WINDOZ)
-    int n = serialport_writewin(fd,str,len);
+    int n = serialport_writewin(fd, str, len);
 #else
     int n = write(fd, str, len);
 #endif
@@ -64,7 +63,7 @@ int serialport_write(HANDLE fd, const char* str)
     return n;
 }
 
-int serialport_readChar(HANDLE fd, char * buf)
+int serialport_readChar(HANDLE fd, char* buf)
 {
     char b[1];
     int n = 0;
@@ -110,22 +109,22 @@ int serialport_readUntil(HANDLE fd, char* buf, char until)
 
 HANDLE serialport_init(const char* serialport, int baudrate)
 {
-    int fd;
+    HANDLE fd;
 #if defined( _WINDOZ ) // win
-    fd = serialport_initWin(serialport);
+    fd = serialport_initWin(serialport, baudrate);
 #else // posix
     struct termios toptions;
 
     fd = open(serialport, O_RDWR | O_NOCTTY);
 
-    if (fd == -1) {
+    if (fd < OK) {
         perror("init_serialport: Unable to open port ");
-        return -1;
+        return NOK;
     }
 
     if (tcgetattr(fd, &toptions) < 0) {
         perror("init_serialport: Couldn't get term attributes");
-        return -1;
+        return NOK;
     }
 
     // serial port default baud 115200 ,
@@ -150,19 +149,17 @@ HANDLE serialport_init(const char* serialport, int baudrate)
     // apply options
     if (tcsetattr(fd, TCSANOW, &toptions) < 0) {
         perror("init_serialport: Couldn't set term attributes");
-        return 0;
+        return NOK;
     }
 #endif
     return fd;
 }
 
 //win
-
 #if defined( _WINDOZ )
 
-HANDLE serialport_initWin(const char *portName)
+HANDLE serialport_initWin(const char *portName, int baudrate)
 {
-
     //Try to open device
     HANDLE fd = CreateFile(portName,
             GENERIC_READ | GENERIC_WRITE,
@@ -175,11 +172,8 @@ HANDLE serialport_initWin(const char *portName)
     //Check if the connection was successfull
     if(fd==INVALID_HANDLE_VALUE)
     {
-        //If not success full display an Error
-
-        perror("ERROR: Handle was not attached. \n");
-        return -1;
-
+        perror("ERROR: Handle was not attached.");
+        return NOK;
     }
 
     //If connected we try to set the comm parameters
@@ -188,12 +182,18 @@ HANDLE serialport_initWin(const char *portName)
     //Try to get the current
     if (!GetCommState(fd, &dcbSerialParams)) {
         //If impossible, show an error
-        MW_TRACE("failed to get current serial parameters!");
-        return -1;
+        perror("failed to get current serial parameters!");
+        return NOK;
     }
 
     //Define serial connection parameters for the arduino board
-    dcbSerialParams.BaudRate=CBR_115200;
+    // serial port default baud 115200 ,
+    if (baudrate != SERIAL_DEFAULT_BAUDRATE) {
+        dcbSerialParams.BaudRate=baudrate;
+    } else {
+        dcbSerialParams.BaudRate=CBR_115200;
+    }
+
     dcbSerialParams.ByteSize=8;
     dcbSerialParams.StopBits=ONESTOPBIT;
     dcbSerialParams.Parity=NOPARITY;
@@ -201,10 +201,10 @@ HANDLE serialport_initWin(const char *portName)
     //Set the parameters and check for their proper application
     if(!SetCommState(fd, &dcbSerialParams)) {
         perror("ALERT: Could not set Serial Port parameters");
-        return -1;
+        return NOK;
     }
 
-    Sleep(1000);
+    //Sleep(1000);
     return fd;
 }
 
@@ -238,7 +238,7 @@ int serialport_readwin(HANDLE fd,char *buffer, unsigned int nbChar)
     return -1;
 }
 
-serialport_writewin(HANDLE fd,char *buffer, unsigned int nbChar)
+int serialport_writewin(HANDLE fd, char* buffer, unsigned int nbChar)
 {
     DWORD bytesSend;
     COMSTAT status;

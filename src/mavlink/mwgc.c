@@ -182,13 +182,13 @@ int main(int argc, char* argv[])
 
     serialLink = MWIserialbuffer_init(serialDevice);
 
-    if (serialLink <= 0) {
-        perror("error open serial");
+    if (serialLink == NOK) {
+        perror("error opening serial port");
         eexit(EXIT_FAILURE);
     }
 
     // init mwi state
-    mwiState = malloc(sizeof(*mwiState));
+    mwiState = calloc(sizeof(*mwiState),sizeof(*mwiState));
     mwiState->mode = MAV_MODE_PREFLIGHT; // initial mode is unknow
     mwiState->callback = &callBack_mwi;
 
@@ -197,10 +197,8 @@ int main(int argc, char* argv[])
     uint64_t lastFrameRequest = 0;
     uint64_t lastHeartBeat = 0;
     uint64_t currentTime = microsSinceEpoch();
-    //int state = NOK;
 
     for (;;) {
-        //MW_TRACE("beginloop\n")
 
         currentTime = microsSinceEpoch();
 
@@ -264,7 +262,6 @@ int main(int argc, char* argv[])
 
         // no need to rush
         usleep(5000);
-        //MW_TRACE("endloop\n")
     }
 }
 
@@ -404,7 +401,8 @@ void callBack_mwi(int state)
             break;
     }
 }
-////--
+
+// gc -> fc
 //void handleMessage(mavlink_message_t* currentMsg) {
 //	switch (currentMsg->msgid) {
 //
@@ -536,7 +534,7 @@ void eexit(int code)
     }
 #endif
 
-    if (sock != NOK) {
+    if (sock > 0) {
         close(sock);
     }
     exit(code);
