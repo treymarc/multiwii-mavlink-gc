@@ -17,18 +17,11 @@
  -2013.12.18 : demo code
 
  ****************************************************************************/
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-
-#include <sys/types.h>
-
-#include <unistd.h>
 #include <stdlib.h>
-#include <fcntl.h>
-
-#include "../mwi/mwi.h"
+#include <unistd.h>
+#include <string.h>
 #include "../include/utils.h"
+#include "../mwi/mwi.h"
 
 HANDLE serialLink = NOK;
 int initOk = NOK;
@@ -37,7 +30,6 @@ void callBack_mwi(int state);
 
 int main(int argc, char* argv[])
 {
-
     // serial devices "COM5" or /dev/ttyUSB0 ..
     char serialDevice[256] = "";
 
@@ -99,9 +91,7 @@ int main(int argc, char* argv[])
 
 void callBack_mwi(int state)
 {
-
     //  do something with the decode message
-
     switch (state) {
         case MSP_IDENT:
             initOk = OK;

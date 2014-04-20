@@ -15,10 +15,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
-
-#include "../include/utils.h"
 #include "serial.h"
-#include <stdint.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <fcntl.h>
 
 #if defined( _WINDOZ )
 
@@ -32,7 +35,6 @@ int serialport_readwin(HANDLE fd,char *buffer, unsigned int nbChar);
 #endif
 
 int serialport_writeChar(HANDLE fd, char b)
-
 {
 
 #if defined (_WINDOZ)
@@ -42,17 +44,12 @@ int serialport_writeChar(HANDLE fd, char b)
 #endif
 
     if (n != 1)
-
         return -1;
-
     return 0;
-
 }
 
 int serialport_write(HANDLE fd, const char* str)
-
 {
-
     int len = 6;
     //int len = strlen(str);
 
@@ -63,11 +60,8 @@ int serialport_write(HANDLE fd, const char* str)
 #endif
 
     if (n != len)
-
         return -1;
-
     return n;
-
 }
 
 int serialport_readChar(HANDLE fd, char * buf)
@@ -82,9 +76,7 @@ int serialport_readChar(HANDLE fd, char * buf)
 #endif
 
     strcpy(buf, b);
-
     return (n == 1);
-
 }
 
 int serialport_readUntil(HANDLE fd, char* buf, char until)
@@ -114,7 +106,6 @@ int serialport_readUntil(HANDLE fd, char* buf, char until)
 
     buf[i] = 0; // null terminate the string
     return i;
-
 }
 
 HANDLE serialport_init(const char* serialport, int baudrate)
@@ -211,10 +202,9 @@ HANDLE serialport_initWin(const char *portName)
     if(!SetCommState(fd, &dcbSerialParams)) {
         perror("ALERT: Could not set Serial Port parameters");
         return -1;
-
     }
-    Sleep(1000);
 
+    Sleep(1000);
     return fd;
 }
 

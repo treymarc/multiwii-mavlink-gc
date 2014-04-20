@@ -15,10 +15,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
-#include <stdint.h>
-
 #ifndef MWI_UTILS_H
 #define MWI_UTILS_H
+
+/*
+ * build specific
+ */
+#if defined( _WINDOZ )
+#include <Windows.h>
+#else
+typedef unsigned short HANDLE;
+#endif
 
 /*
  * version
@@ -30,15 +37,6 @@
  */
 #if !defined(_LOGLEVL)
 #define _LOGLEVL 0
-#endif
-
-/*
- * build specific
- */
-#if defined( _WINDOZ )
-#include <Windows.h>
-#else
-typedef unsigned short HANDLE;
 #endif
 
 /*
@@ -54,17 +52,13 @@ typedef unsigned short HANDLE;
 #define deg2radian(X) (PI * X) / 180
 
 /*
- * time
- */
-
-uint64_t microsSinceEpoch(void);
-
-/*
  * log
  */
 #define MW_ERROR(x) printf(x);
 
 #if (_LOGLEVL>2)
+#include <stdio.h>
+
 #define MW_INFO(x) printf(x);
 #define MW_TRACE(x) printf(x);
 #else

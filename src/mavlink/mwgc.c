@@ -141,7 +141,6 @@ int main(int argc, char* argv[])
                 i++;
             }
         }
-
     }
 
     printf("ground station ip: %s\n", targetIp);
@@ -163,21 +162,17 @@ int main(int argc, char* argv[])
 
     /* Attempt to make it non blocking */
 #if defined(_WINDOZ)
-
     int arg = 1;
     if(ioctlsocket(sock, FIONBIO, &arg )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(EXIT_FAILURE);
     }
-
 #else
-
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         close(sock);
         eexit(EXIT_FAILURE);
     }
-
 #endif
 
     memset(&groundStationAddr, 0, sizeof(groundStationAddr));
@@ -284,7 +279,6 @@ void callBack_mwi(int state)
 
     switch (state) {
         case MSP_IDENT:
-
             mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, MAV_STATE_ACTIVE);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
@@ -294,7 +288,6 @@ void callBack_mwi(int state)
             break;
 
         case MSP_STATUS:
-
             /* Send Status */
             mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->present, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0, mwiState->serialErrorsCount, mwiState->i2cError, 0, 0, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
@@ -303,9 +296,7 @@ void callBack_mwi(int state)
             break;
 
         case MSP_RAW_IMU:
-
             /* Send raw imu */
-
             mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime, mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
@@ -407,10 +398,9 @@ void callBack_mwi(int state)
             break;
 
         case MSP_PIDNAMES:
-
             break;
-        case NOK:
 
+        case NOK:
             break;
     }
 }
@@ -558,7 +548,6 @@ void rtfmVersion(void)
     printf(MWGC_VERSION);
     printf("\n\n");
     eexit(EXIT_SUCCESS);
-
 }
 
 void rtfmHelp(void)
@@ -592,5 +581,4 @@ void rtfmArgvErr(char* argv)
     printf("\nInvalides arguments : %s\n", argv);
     printf("\n\nUsages : mwgc --help");
     printf("\n\n");
-
 }

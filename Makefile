@@ -14,8 +14,6 @@ endif
 
 CC	?= gcc
 
-
-
 CFLAGS	:= -std=c99 -g 
 
 CFLAGS	+= $(DWIN) -D_LOGLEVL=$(LOGLEV) -D_GNU_SOURCE -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \

@@ -17,18 +17,11 @@
  -2013.12.18 : demo code
 
  ****************************************************************************/
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-
-#include <sys/types.h>
-
-#include <unistd.h>
 #include <stdlib.h>
-#include <fcntl.h>
-
-#include "../mwi/mwi.h"
+#include <unistd.h>
+#include <string.h>
 #include "../include/utils.h"
+#include "../mwi/mwi.h"
 
 HANDLE serialLink = NOK;
 int initOk = NOK;
@@ -38,7 +31,6 @@ void callBack_mwi(int state);
 
 int main(int argc, char* argv[])
 {
-
     // serial devices "COM5" or /dev/ttyUSB0 ..
     char serialDevice[256] = "";
 
@@ -94,10 +86,9 @@ int main(int argc, char* argv[])
 
         MWIserialbuffer_readNewFrames(serialLink, mwiState);
         printf("%ju;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n", currentTime, mwiState->angx, mwiState->angy, mwiState->head,
-
         mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5],
-
         mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw, mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
+
         usleep(5000);
     }
 }
@@ -109,5 +100,4 @@ void callBack_mwi(int state)
             initOk = OK;
             break;
     }
-
 }

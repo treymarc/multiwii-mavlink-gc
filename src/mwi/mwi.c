@@ -1,10 +1,5 @@
-#include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
-
-#include <stdint.h>
-
-#include "../serial/serial.h"
+#include <sys/time.h>
+#include <string.h>
 #include "../include/utils.h"
 #include "mwi.h"
 
@@ -23,7 +18,6 @@ int readindex = 0; // read position in the serial frame
 int writeindex = 0; // write position in the serial frame
 
 uint8_t stateMSP = IDLE;
-
 
 // for reading byte from serial frame
 int read32(void);
@@ -122,7 +116,7 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->i2cError = read16();
             mwiState->present = read16();
             mwiState->mode = read16();
-//								MAV_MODE_STABILIZE_ARMED
+            //MAV_MODE_STABILIZE_ARMED
             // if ((present&1) >0) {buttonAcc.setColorBackground(green_);} else {buttonAcc.setColorBackground(red_);tACC_ROLL.setState(false); tACC_PITCH.setState(false); tACC_Z.setState(false);}
             // if ((present&2) >0) {buttonBaro.setColorBackground(green_);} else {buttonBaro.setColorBackground(red_); tBARO.setState(false); }
             // if ((present&4) >0) {buttonMag.setColorBackground(green_);} else {buttonMag.setColorBackground(red_); tMAGX.setState(false); tMAGY.setState(false); tMAGZ.setState(false); }
@@ -168,7 +162,6 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->rcAUX2 = read16();
             mwiState->rcAUX3 = read16();
             mwiState->rcAUX4 = read16();
-
             break;
 
         case MSP_RAW_GPS:
@@ -203,13 +196,11 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->angx = read16() / 10;
             mwiState->angy = read16() / 10;
             mwiState->head = read16();
-
             break;
 
         case MSP_ALTITUDE:
             MW_TRACE("MSP_ALTITUDE")
             mwiState->baro = read32();
-
             break;
 
         case MSP_BAT: // TODO SEND
@@ -265,7 +256,6 @@ void decode(mwi_uav_state_t *mwiState)
             for (i = 0; i < DEBUGITEMS; i++) {
                 mwiState->debug[i] = read16();
             }
-
             break;
 
         case MSP_BOXNAMES:
@@ -283,9 +273,6 @@ void decode(mwi_uav_state_t *mwiState)
     mwiState->callback(recievedCmd);
 }
 
-/**
- *
- */
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
 {
 //	uint8_t cmd = NOK; // incoming commande
@@ -333,13 +320,10 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                 // This is the count of bytes which follow AFTER the command
                 // byte which is next. +1 because we save() the cmd byte too, but
                 // it excludes the checksum
-
                 dataSize = readbuffer[0] + 1;
-
                 // reset index variables for save()
                 writeindex = 0;
                 checksum = readbuffer[0]; // same as: checksum = 0, checksum ^= input[0];
-
                 // the command is to follow
                 setState(HEADER_SIZE);
                 break;
@@ -356,15 +340,12 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                     // keep reading the payload in this state until offset==dataSize
                     checksum ^= readbuffer[0];
                     save(readbuffer[0]);
-
                     // stay in this state
                 } else {
                     // done reading, reset the decoder for next byte
                     setState(IDLE);
-
                     if ((checksum & MASK) != readbuffer[0]) {
                         MW_TRACE("checksum failed")
-
                         mwiState->serialErrorsCount += 1;
                     } else {
                         decode(mwiState);
@@ -378,9 +359,8 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
 }
 
 /* QNX timer version */
-#if (defined __QNX__) | (defined __QNXNTO__)
+#if (defined __QNX__) || (defined __QNXNTO__)
 uint64_t microsSinceEpoch(void) {
-
     struct timespec time;
     uint64_t micros = 0;
 
@@ -392,7 +372,6 @@ uint64_t microsSinceEpoch(void) {
 #else
 uint64_t microsSinceEpoch(void)
 {
-
     struct timeval tv;
     uint64_t micros = 0;
 

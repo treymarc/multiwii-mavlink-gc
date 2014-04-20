@@ -15,6 +15,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
+#include <stdint.h>
 #include "../serial/serial.h"
 
 #ifndef MWI_NS_H
@@ -111,7 +112,6 @@ typedef struct {
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
 int MWIserialbuffer_init(const char* serialport);
-
 uint64_t microsSinceEpoch(void);
 
 #endif
