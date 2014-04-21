@@ -1,8 +1,12 @@
 
 
 LOGLEV :=3
-#WINBUILD := true
 
+ifdef ComSpec
+WINBUILD := true
+else
+WINBUILD := false
+endif
 
 #--------------------
 
@@ -18,7 +22,7 @@ endif
 
 CC	?= gcc
 
-CFLAGS	:= -std=c99 -g 
+CFLAGS	:= -std=c99 -g -O3 
 
 CFLAGS	+= $(DWIN) -D_LOGLEVL=$(LOGLEV) -D_GNU_SOURCE -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
 		   -Wcast-align -Wwrite-strings -Wnested-externs -Winline \

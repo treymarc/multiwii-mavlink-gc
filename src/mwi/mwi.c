@@ -114,7 +114,6 @@ int8_t read8(void)
 void decode(mwi_uav_state_t *mwiState)
 {
     //MW_TRACE("decoded");
-
     readindex = 0;
     uint8_t recievedCmd = read8();
 

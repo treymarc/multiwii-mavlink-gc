@@ -26,11 +26,7 @@ Build from source :
 ===================
 
 	
-Windows only :
-	
-	$ make WINBUILD=true 
-	
-all Arch :
+Windows and Linux Arch :
 
 	$ make
 
@@ -40,7 +36,7 @@ Run :
 ===================
 
 
-in a terminal :
+in a terminal navigate to folder src\mavlink :
 	
 	run "mwgc --help" 
 		

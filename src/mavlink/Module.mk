@@ -7,13 +7,9 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-
 MAVLINK_SRC_DIR	:= src$(PATH_SEP)mavlink
-
-MAVLINK_SRC_CFLAGS	:= -O2 
-
+MAVLINK_SRC_CFLAGS	:=
 MAVLINK_SRC_TARGETS	:=  mwgc
-
 
 #
 # Programs
@@ -30,7 +26,6 @@ $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o  $(SERIAL
 #
 # Objects
 #
-
 $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.c  
 	$(CC)  $(MAVLINK_SRC_CFLAGS) $(CFLAGS) $(MAVLINK_SRC_CFLAGS) -c $< -o $@
 
@@ -38,9 +33,7 @@ $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.c
 #
 # Commands
 #
-
 all-mwgc: $(addprefix $(MAVLINK_SRC_DIR)$(PATH_SEP),$(MAVLINK_SRC_TARGETS))
-
 
 clean-mwgc:
 	$(RM)  $(MAVLINK_SRC_DIR)$(PATH_SEP)*.o
@@ -49,7 +42,5 @@ clean-mwgc:
 
 all: all-mwgc
 
-
 clean: clean-mwgc
-
 
