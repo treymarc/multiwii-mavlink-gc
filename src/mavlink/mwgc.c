@@ -155,8 +155,8 @@ int main(int argc, char* argv[])
     locAddr.sin_port = htons(14551);
 
     /* Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol */
-    if (NOK == bind(sock, (struct sockaddr *)&locAddr, sizeof(struct sockaddr))) {
-        perror("error bind failed");
+    if (NOK != bind(sock, (struct sockaddr *)&locAddr, sizeof(struct sockaddr))) {
+        perror("error bind to port 14551 failed");
         eexit(EXIT_FAILURE);
     }
 
