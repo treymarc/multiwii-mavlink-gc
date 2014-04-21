@@ -208,7 +208,7 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_ATTITUDE:
-            MW_TRACE("MSP_ATTITUDEv")
+            MW_TRACE("MSP_ATTITUDE\n")
             mwiState->angx = read16() / 10;
             mwiState->angy = read16() / 10;
             mwiState->head = read16();
