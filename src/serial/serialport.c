@@ -127,13 +127,6 @@ HANDLE serialport_init(const char* serialport, int baudrate)
         return NOK;
     }
 
-    // serial port default baud 115200 ,
-    if (baudrate != SERIAL_115200_BAUDRATE) {
-        cfsetispeed(&toptions, baudrate);
-        cfsetospeed(&toptions, baudrate);
-    } else {
-
-    }
 
     switch (baudrate) {
 
@@ -157,7 +150,6 @@ HANDLE serialport_init(const char* serialport, int baudrate)
         default:
             cfsetispeed(&toptions, B115200);
             cfsetospeed(&toptions, B115200);
-            break;
             break;
     }
 
