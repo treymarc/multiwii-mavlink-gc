@@ -195,9 +195,8 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->GPS_numSat = read8();
             mwiState->GPS_latitude = read32();
             mwiState->GPS_longitude = read32();
-            mwiState->GPS_altitude = (uint16_t)readu16();
-            mwiState->GPS_speed = read16();
-            mwiState->GPS_heading = read16();
+            mwiState->GPS_altitude = read16();
+            mwiState->GPS_speed = (uint16_t)readu16();
             /* Send gps */
             break;
 
