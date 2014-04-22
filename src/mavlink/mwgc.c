@@ -213,15 +213,13 @@ int main(int argc, char* argv[])
                 lastFrameRequest = currentTime;
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
                 MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-                MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG); // TODO msp ???
                 MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);// TODO msp ???
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
                 MWIserialbuffer_askForFrame(serialLink, MSP_RC);
                 MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
                 MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-
                 MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
 
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
@@ -238,7 +236,6 @@ int main(int argc, char* argv[])
             //MSP_MOTOR
             //MSP_COMP_GPS
             //MSP_BAT
-            //MSP_DEBUG
 
         }
 
@@ -255,7 +252,7 @@ int main(int argc, char* argv[])
             mavlink_message_t msgIn;
             mavlink_status_t status;
             //unsigned int temp = 0;
-            printf("Bytes Received: %d\nDatagram: ", (int)recsize);
+            //printf("Bytes Received: %d\nDatagram: ", (int)recsize);
             for (int i = 0; i < recsize; ++i) {
                 //temp = udpInBuf[i];
                 //printf("%02x ", (unsigned char)temp);
@@ -393,7 +390,7 @@ void callBack_mwi(int state)
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
             break;
 
-        case MSP_BAT: // TODO SEND
+        case MSP_ANALOG: // TODO SEND
             break;
 
         case MSP_RC_TUNING:

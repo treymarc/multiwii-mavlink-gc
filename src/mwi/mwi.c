@@ -219,7 +219,7 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->baro = read32();
             break;
 
-        case MSP_BAT: // TODO SEND
+        case MSP_ANALOG: // TODO SEND
             MW_TRACE("MSP_BAT\n")
             mwiState->bytevbat = read8();
             mwiState->pMeterSum = read16();

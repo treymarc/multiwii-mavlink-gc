@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
                 lastFrameRequest = currentTime;
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
                 MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-                MWIserialbuffer_askForFrame(serialLink, MSP_BAT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG);
                 MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
                 MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
@@ -124,7 +124,7 @@ void callBack_mwi(int state)
         case MSP_ALTITUDE:
             break;
 
-        case MSP_BAT:
+        case MSP_ANALOG:
             break;
 
         case MSP_RC_TUNING:
