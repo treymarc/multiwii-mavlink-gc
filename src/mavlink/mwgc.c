@@ -362,7 +362,7 @@ void callBack_mwi(int state)
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
             /* Send update hud*/
-            mavlink_msg_vfr_hud_pack(mwiUavID, 200, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, mwiState->baro, 0);
+            mavlink_msg_vfr_hud_pack(mwiUavID, 200, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, mwiState->baro/100.0f,  mwiState->vario/100.0f);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
@@ -374,7 +374,7 @@ void callBack_mwi(int state)
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-            mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro, 0, 0, 0, 0);
+            mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro*10, 0, 0, 0, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
