@@ -286,17 +286,17 @@ void callBack_mwi(int state)
 
             for (i = 0; i < mwiState->boxcount; i++) {
                 (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
-                if (0==strcmp(mwiState->box[i]->name, "ARM")) {
+                if (0 == strcmp(mwiState->box[i]->name, "ARM")) {
                     armed = mwiState->box[i]->state;
                 }
-                if (0==strcmp(mwiState->box[i]->name, "HORIZON")) {
+                if (0 == strcmp(mwiState->box[i]->name, "HORIZON")) {
                     stabilize = mwiState->box[i]->state;
                 }
             }
 
             if (gps && armed && stabilize)
                 mwiState->mode = MAV_MODE_GUIDED_ARMED;
-			
+
             else if (gps && !armed && stabilize)
                 mwiState->mode = MAV_MODE_GUIDED_DISARMED;
 
@@ -312,7 +312,7 @@ void callBack_mwi(int state)
             else if (!gps && !armed && stabilize)
                 mwiState->mode = MAV_MODE_STABILIZE_DISARMED;
 
-            mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, armed ? MAV_STATE_ACTIVE :MAV_STATE_STANDBY );
+            mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
@@ -354,6 +354,11 @@ void callBack_mwi(int state)
         case MSP_RC:
             /* Send rcDate */
             mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, 255);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+
+            /* Send update hud*/
+            mavlink_msg_vfr_hud_pack(mwiUavID, 200, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, mwiState->baro, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
