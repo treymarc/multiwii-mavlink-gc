@@ -41,7 +41,8 @@ typedef struct mwi_uav_state_t {
     int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, vario, head, angx, angy;
 
     int GPS_distanceToHome, GPS_directionToHome;
-    int GPS_numSat, GPS_fix, GPS_update, GPS_altitude, GPS_speed,GPS_heading;
+    int GPS_numSat, GPS_fix, GPS_update,  GPS_speed,GPS_heading;
+    uint16_t GPS_altitude;
     int GPS_latitude, GPS_longitude;
     int time1, time2;
     int cycleTime, i2cError;

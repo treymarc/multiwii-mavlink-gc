@@ -367,9 +367,16 @@ void callBack_mwi(int state)
 
         case MSP_RAW_GPS:
             /* Send gps */
-            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*10, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
+            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*10.0, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+
+
+            mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime,
+                    mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*10.0, mwiState->baro, 0,0,0, mwiState->GPS_heading);
+            len = mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+
 
             break;
 
