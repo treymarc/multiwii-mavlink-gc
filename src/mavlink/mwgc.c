@@ -91,6 +91,7 @@ int identSended = NOK;
 // global : serialPort, socket , uavId, groudnstation
 HANDLE serialLink = 0;
 int autoTelemtry = 0;
+int baudrate = SERIAL_115200_BAUDRATE;
 SOCKET sock;
 short mwiUavID;
 struct sockaddr_in groundStationAddr;
@@ -128,7 +129,6 @@ int main(int argc, char* argv[])
         rtfmVersion();
     }
 
-
     // parse other flag
     for (int i = 1; i < argc; i++) {
         if (i + 1 != argc) {
@@ -141,8 +141,11 @@ int main(int argc, char* argv[])
             } else if (strcmp(argv[i], "-id") == 0) {
                 mwiUavID = atoi(argv[i + 1]);
                 i++;
-            }else if (strcmp(argv[i], "-autotelemetry") == 0) {
-                autoTelemtry=atoi(argv[i + 1]);
+            } else if (strcmp(argv[i], "-autotelemetry") == 0) {
+                autoTelemtry = atoi(argv[i + 1]);
+                i++;
+            } else if (strcmp(argv[i], "-baudrate") == 0) {
+                baudrate = atoi(argv[i + 1]);
                 i++;
             }
         }
@@ -185,7 +188,7 @@ int main(int argc, char* argv[])
     groundStationAddr.sin_addr.s_addr = inet_addr(targetIp);
     groundStationAddr.sin_port = htons(14550);
 
-    serialLink = MWIserialbuffer_init(serialDevice, SERIAL_DEFAULT_BAUDRATE);
+    serialLink = MWIserialbuffer_init(serialDevice, baudrate);
 
     if (serialLink == NOK) {
         perror("error opening serial port");
@@ -367,16 +370,13 @@ void callBack_mwi(int state)
 
         case MSP_RAW_GPS:
             /* Send gps */
-            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*1000.0, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
+            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 1000.0, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
-
-            mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime,
-                    mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*10.0, mwiState->baro, 0,0,0,0);
+            mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro, 0, 0, 0, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
-
 
             break;
 
@@ -608,6 +608,8 @@ void rtfmHelp(void)
     printf("\t  default value : 127.0.0.1\n\n");
     printf("\t -s <serial device name>\n");
     printf("\t  default value : /dev/ttyO2\n\n");
+    printf("\t -baudrate <spedd\n");
+       printf("\t  default value : 115200\n\n");
     printf("\t -id <id for mavlink>\n");
     printf("\t  default value : 1\n\n");
     printf("\t  -telemetryauto <int>\n");

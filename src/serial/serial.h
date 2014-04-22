@@ -17,7 +17,11 @@
  ****************************************************************************/
 #include "../include/utils.h"
 
-#define SERIAL_DEFAULT_BAUDRATE 0
+#define SERIAL_115200_BAUDRATE  115200
+#define SERIAL_57600_BAUDRATE   57600
+#define SERIAL_38400_BAUDRATE   38400
+#define SERIAL_19200_BAUDRATE   19200
+#define SERIAL_9600_BAUDRATE    9600
 
 HANDLE serialport_init(const char* serialport, int i);
 

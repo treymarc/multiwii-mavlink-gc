@@ -128,12 +128,37 @@ HANDLE serialport_init(const char* serialport, int baudrate)
     }
 
     // serial port default baud 115200 ,
-    if (baudrate != SERIAL_DEFAULT_BAUDRATE) {
+    if (baudrate != SERIAL_115200_BAUDRATE) {
         cfsetispeed(&toptions, baudrate);
         cfsetospeed(&toptions, baudrate);
     } else {
-        cfsetispeed(&toptions, B115200);
-        cfsetospeed(&toptions, B115200);
+
+    }
+
+    switch (baudrate) {
+
+        case SERIAL_57600_BAUDRATE:
+            cfsetispeed(&toptions, B57600);
+            cfsetospeed(&toptions, B57600);
+            break;
+        case SERIAL_38400_BAUDRATE:
+            cfsetispeed(&toptions, B38400);
+            cfsetospeed(&toptions, B38400);
+            break;
+        case SERIAL_19200_BAUDRATE:
+            cfsetispeed(&toptions, B19200);
+            cfsetospeed(&toptions, B19200);
+            break;
+        case SERIAL_9600_BAUDRATE:
+            cfsetispeed(&toptions, B9600);
+            cfsetospeed(&toptions, B9600);
+            break;
+        case SERIAL_115200_BAUDRATE:
+        default:
+            cfsetispeed(&toptions, B115200);
+            cfsetospeed(&toptions, B115200);
+            break;
+            break;
     }
 
     // set parity8N1
@@ -188,7 +213,7 @@ HANDLE serialport_initWin(const char *portName, int baudrate)
 
     //Define serial connection parameters for the arduino board
     // serial port default baud 115200 ,
-    if (baudrate != SERIAL_DEFAULT_BAUDRATE) {
+    if (baudrate != SERIAL_115200_BAUDRATE) {
         dcbSerialParams.BaudRate=baudrate;
     } else {
         dcbSerialParams.BaudRate=CBR_115200;
