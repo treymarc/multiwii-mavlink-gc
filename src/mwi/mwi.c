@@ -108,14 +108,6 @@ int16_t read16(void)
     return t;
 }
 
-uint16_t readu16(void)
-{
-    uint16_t t = (uint16_t)frame[readindex++] & 0xff;
-    t += (uint16_t)frame[readindex++] << 8;
-    return t;
-}
-
-
 int8_t read8(void)
 {
     return (frame[readindex++] & 0xff);
@@ -196,7 +188,7 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->GPS_latitude = read32();
             mwiState->GPS_longitude = read32();
             mwiState->GPS_altitude = read16();
-            mwiState->GPS_speed = (uint16_t)readu16();
+            mwiState->GPS_speed = read16();
             /* Send gps */
             break;
 
