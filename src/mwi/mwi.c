@@ -94,9 +94,9 @@ void setState(int aState)
 int read32(void)
 {
     int32_t t = frame[readindex++] & 0xff;
-    t += frame[readindex++] << 8;
-    t += frame[readindex++] << 16;
-    t += frame[readindex] << 24;
+    t += (frame[readindex++] & 0xff) << 8;
+    t += (frame[readindex++] & 0xff) << 16;
+    t += (frame[readindex++] & 0xff) << 24;
     return t;
 
 }
