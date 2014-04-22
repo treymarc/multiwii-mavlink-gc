@@ -21,13 +21,13 @@
 #include "../include/utils.h"
 #include "mwi.h"
 
-int MASK = 0xff;
+#define MASK  0xff
 #define IDLE  0
 #define HEADER_START 1
 #define HEADER_M  2
 #define HEADER_ARROW  3
 #define HEADER_SIZE  4
-#define  HEADER_CMD 5
+#define HEADER_CMD 5
 
 #define BLENGTH 256
 
@@ -93,24 +93,24 @@ void setState(int aState)
 
 int read32(void)
 {
-    int32_t t = frame[readindex++] & 0xff;
-    t += (frame[readindex++] & 0xff) << 8;
-    t += (frame[readindex++] & 0xff) << 16;
-    t += (frame[readindex++] & 0xff) << 24;
+    int32_t t = frame[readindex++] & MASK;
+    t += (frame[readindex++] & MASK) << 8;
+    t += (frame[readindex++] & MASK) << 16;
+    t += (frame[readindex++] & MASK) << 24;
     return t;
 
 }
 
 int16_t read16(void)
 {
-    int16_t t = frame[readindex++] & 0xff;
+    int16_t t = frame[readindex++] & MASK;
     t += frame[readindex++] << 8;
     return t;
 }
 
 int8_t read8(void)
 {
-    return (frame[readindex++] & 0xff);
+    return (frame[readindex++] & MASK);
 }
 
 void decode(mwi_uav_state_t *mwiState)
@@ -140,7 +140,7 @@ void decode(mwi_uav_state_t *mwiState)
 
             for (i = 0; i < mwiState->boxcount; i++) {
                 (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
-                //printf("%s = %d",(mwiState->box[i])->name,(mwiState->box[i])->state);
+
             }
             break;
 
@@ -214,7 +214,7 @@ void decode(mwi_uav_state_t *mwiState)
 
         case MSP_ANALOG: // TODO SEND
             MW_TRACE("MSP_BAT\n")
-            mwiState->bytevbat = read8();
+            mwiState->vBat = read8();
             mwiState->pMeterSum = read16();
             mwiState->rssi = read16();
             mwiState->pAmp = read16();
@@ -245,10 +245,6 @@ void decode(mwi_uav_state_t *mwiState)
                 mwiState->byteP[i] = read8();
                 mwiState->byteI[i] = read8();
                 mwiState->byteD[i] = read8();
-                //   confP[i].setValue(byteP[i]/10.0);confI[i].setValue(byteI[i]/1000.0);confD[i].setValue(byteD[i]);
-                //   confP[i].setColorBackground(green_);
-                //   confI[i].setColorBackground(green_);
-                //   confD[i].setColorBackground(green_);
             }
             break;
 
@@ -279,20 +275,19 @@ void decode(mwi_uav_state_t *mwiState)
             if (strlen(boxnames) < 1)
                 return;
 
-            memmove(boxnames, boxnames+1, strlen(boxnames));
+            memmove(boxnames, boxnames + 1, strlen(boxnames));
             boxname = strtok(boxnames, ";");
             mwiState->boxcount = 0;
 
             while (boxname != NULL) {
-                if (mwiState->box[mwiState->boxcount] != 0){
+                if (mwiState->box[mwiState->boxcount] != 0) {
                     free(mwiState->box[mwiState->boxcount]);
                 }
                 mwiState->box[mwiState->boxcount] = malloc(sizeof(*mwiState->box[mwiState->boxcount]));
 
                 strcpy(mwiState->box[mwiState->boxcount]->name, boxname);
 
-                MW_TRACE(boxname)
-                MW_TRACE("\n")
+                MW_TRACE(boxname)MW_TRACE("\n")
                 mwiState->boxcount += 1;
                 boxname = strtok(NULL, ";");
             }

@@ -50,7 +50,7 @@ typedef struct mwi_uav_state_t {
     int multiType; // 1 for tricopter, 2 for quad+, 3 for quadX, ...
     int pMeterSum, pAmp;
     int PowerTrigger;
-    int bytevbat;
+    int vBat;
 
     int rssi;
 
