@@ -38,7 +38,7 @@ int writeindex = 0; // write position in the serial frame
 uint8_t stateMSP = IDLE;
 
 // for reading byte from serial frame
-int read32(void);
+int32_t read32(void);
 int16_t read16(void);
 int8_t read8(void);
 
@@ -93,9 +93,10 @@ void setState(int aState)
 
 int read32(void)
 {
-    int t = frame[readindex++] & 0xff;
+    int32_t t = frame[readindex++] & 0xff;
     t += frame[readindex++] << 8;
-    t += frame[readindex] << 6;
+    t += frame[readindex++] << 8;
+    t += frame[readindex] << 8;
     return t;
 
 }
@@ -181,26 +182,18 @@ void decode(mwi_uav_state_t *mwiState)
             break;
 
         case MSP_RAW_GPS:
-            // GPS_fix = read8();
-            // GPS_numSat = read8();
-            // GPS_latitude = read32();
-            // GPS_longitude = read32();
-            // GPS_altitude = read16();
-            // GPS_speed = read16();
             MW_TRACE("MSP_RAW_GPS\n")
             mwiState->GPS_fix = read8();
             mwiState->GPS_numSat = read8();
-            // mwiState->GPS_latitude = read32();
-            // mwiState->GPS_longitude = read32();
-            // mwiState->GPS_altitude = read16();
-            // mwiState->GPS_speed = read16();
+            mwiState->GPS_latitude = read32();
+            mwiState->GPS_longitude = read32();
+            mwiState->GPS_altitude = read16();
+            mwiState->GPS_speed = read16();
+            mwiState->GPS_heading = read16();
             /* Send gps */
             break;
 
         case MSP_COMP_GPS:
-            // GPS_distanceToHome = read16();
-            // GPS_directionToHome = read16();
-            // GPS_update = read8();
             MW_TRACE("MSP_COMP_GPS\n")
             mwiState->GPS_distanceToHome = read16();
             mwiState->GPS_directionToHome = read16();
@@ -217,12 +210,15 @@ void decode(mwi_uav_state_t *mwiState)
         case MSP_ALTITUDE:
             MW_TRACE("MSP_ALTITUDE\n")
             mwiState->baro = read32();
+            mwiState->vario = read16();
             break;
 
         case MSP_ANALOG: // TODO SEND
             MW_TRACE("MSP_BAT\n")
             mwiState->bytevbat = read8();
             mwiState->pMeterSum = read16();
+            mwiState->rssi = read16();
+            mwiState->pAmp = read16();
             break;
 
         case MSP_RC_TUNING:
@@ -232,6 +228,8 @@ void decode(mwi_uav_state_t *mwiState)
             mwiState->byteRollPitchRate = read8();
             mwiState->byteYawRate = read8();
             mwiState->byteDynThrPID = read8();
+            mwiState->byteRC_thrMid = read8();
+            mwiState->byteRC_thrExpo = read8();
             break;
 
         case MSP_ACC_CALIBRATION:

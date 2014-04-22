@@ -213,9 +213,9 @@ int main(int argc, char* argv[])
                 lastFrameRequest = currentTime;
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
                 MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG); // TODO msp ???
+                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG);
                 MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);// TODO msp ???
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
                 MWIserialbuffer_askForFrame(serialLink, MSP_RC);
                 MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
@@ -367,7 +367,7 @@ void callBack_mwi(int state)
 
         case MSP_RAW_GPS:
             /* Send gps */
-            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, 48.0, 7.0, 100.0, 0, 0, 0, 0, 0);
+            mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude*10, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 

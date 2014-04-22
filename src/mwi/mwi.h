@@ -31,7 +31,6 @@ typedef struct {
 } mwi_box_t;
 
 typedef struct mwi_uav_state_t {
-
     mwi_box_t* box[32];
     int version, sensors, mode, profile, boxcount;
     int capability, mspVersion;
@@ -39,22 +38,25 @@ typedef struct mwi_uav_state_t {
     int servo[8];
     int debug[4];
 
-    int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy;
+    int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, vario, head, angx, angy;
 
     int GPS_distanceToHome, GPS_directionToHome;
-    int GPS_numSat, GPS_fix, GPS_update;
+    int GPS_numSat, GPS_fix, GPS_update, GPS_altitude, GPS_speed,GPS_heading;
+    int GPS_latitude, GPS_longitude;
     int time1, time2;
     int cycleTime, i2cError;
     int nunchukPresent, i2cAccPresent, i2cBaroPresent, i2cMagnetoPresent, GPSPresent, levelMode;
     int multiType; // 1 for tricopter, 2 for quad+, 3 for quadX, ...
-    int pMeterSum;
+    int pMeterSum, pAmp;
     int PowerTrigger;
     int bytevbat;
+
+    int rssi;
 
     int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
 
     int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
-    int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteYawRate, byteDynThrPID;
+    int byteRC_RATE, byteRC_EXPO, byteRollPitchRate,byteRC_thrMid, byteRC_thrExpo, byteYawRate, byteDynThrPID;
     int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
 
     int serialErrorsCount;
