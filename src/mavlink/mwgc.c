@@ -90,6 +90,7 @@ int identSended = NOK;
 
 // global : serialPort, socket , uavId, groudnstation
 HANDLE serialLink = 0;
+int autoTelemtry = 0;
 SOCKET sock;
 short mwiUavID;
 struct sockaddr_in groundStationAddr;
@@ -127,7 +128,8 @@ int main(int argc, char* argv[])
         rtfmVersion();
     }
 
-    // parse flag : -ip , -s , -id
+
+    // parse other flag
     for (int i = 1; i < argc; i++) {
         if (i + 1 != argc) {
             if (strcmp(argv[i], "-ip") == 0) {
@@ -138,6 +140,9 @@ int main(int argc, char* argv[])
                 i++;
             } else if (strcmp(argv[i], "-id") == 0) {
                 mwiUavID = atoi(argv[i + 1]);
+                i++;
+            }else if (strcmp(argv[i], "-autotelemetry") == 0) {
+                autoTelemtry=atoi(argv[i + 1]);
                 i++;
             }
         }
@@ -202,7 +207,7 @@ int main(int argc, char* argv[])
 
         currentTime = microsSinceEpoch();
 
-        if ((currentTime - lastFrameRequest) > 1000 * 30) {
+        if (!autoTelemtry && (currentTime - lastFrameRequest) > 1000 * 30) {
 
             if (identSended == OK) {
                 lastFrameRequest = currentTime;
@@ -249,17 +254,16 @@ int main(int argc, char* argv[])
             // Something received - print out all bytes and parse packet
             mavlink_message_t msgIn;
             mavlink_status_t status;
-            unsigned int temp = 0;
+            //unsigned int temp = 0;
             printf("Bytes Received: %d\nDatagram: ", (int)recsize);
             for (int i = 0; i < recsize; ++i) {
-                temp = udpInBuf[i];
-                printf("%02x ", (unsigned char)temp);
+                //temp = udpInBuf[i];
+                //printf("%02x ", (unsigned char)temp);
                 if (mavlink_parse_char(MAVLINK_COMM_0, udpInBuf[i], &msgIn, &status)) {
                     // Packet received
                     printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", msgIn.sysid, msgIn.compid, msgIn.len, msgIn.msgid);
                 }
             }
-
         }
 
         // no need to rush
@@ -602,6 +606,9 @@ void rtfmHelp(void)
     printf("\t  default value : /dev/ttyO2\n\n");
     printf("\t -id <id for mavlink>\n");
     printf("\t  default value : 1\n\n");
+    printf("\t  -telemetryauto <int>\n");
+    printf("\t   1 : assume the flight controler will send data\n");
+    printf("\t   0 : send request for each data (default)\n");
 
     printf("\n");
     printf("\nOptions:\n\n");

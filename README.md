@@ -1,55 +1,36 @@
 multiwii-mavlink-gc
 ===================
 
-Connecting Multiwii Flight Controler to QGroundControl  with mavlink
+Connecting Multiwii Flight Controler to QGroundControl with mavlink
 
-Multiwii serial protocol decoding exemple in C
+Multiwii Serial Protocol decoding exemple in C
 
-Multiwii serial protocol to csv  
+Multiwii Serial Protocol log to csv  
 
-Requirements :
+
+Build from source 
 ===================
-
-	QgroundControl : http://qgroundcontrol.org/downloads
-
-		-> you can run the demo file
-	
-	
-	Multiwii : http://www.multiwii.com/
-	
-		-> you can connect to a working mwc with MultwiiConf_2.0 
-
-
-
-
-Build from source :
-===================
-
 	
 Windows and Linux Arch :
 
 	$ make
 
 
-
-Run :
+Run
 ===================
-
 
 in a terminal navigate to folder src\mavlink :
 	
 	run "mwgc --help" 
 		
 		
-exemple :
-	
-	read data from COM4 and broadcast to groundStation running at ip 192.168.0.13
+read data from COM4 and broadcast to groundStation running at ip 192.168.0.13
 	
 	"mwgc.exe -s COM4 -ip 192.168.0.13"
 
 	
-WIN
-	
+Windows
+-------------
 	read data from COM4 and broadcast as uav 1 to groundStation running at ip 192.168.0.13
 	read data from COM5 and broadcast as uav 2 to groundStation  running at ip 192.168.0.13
 	
@@ -57,5 +38,5 @@ WIN
 	"mwgc.exe -s COM6 -id 2 -ip 192.168.0.13"
 	
 Linux
-	
+-------------
 	"mwgc -s /dev/ttyUSB1 -ip 127.0.0.1"
