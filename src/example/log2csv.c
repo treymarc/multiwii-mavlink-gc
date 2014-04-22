@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     }
 
     MW_TRACE("starting..\n")
-    serialLink = MWIserialbuffer_init(serialDevice);
+    serialLink = MWIserialbuffer_init(serialDevice, SERIAL_DEFAULT_BAUDRATE);
 
     if (serialLink == NOK) {
         perror("error opening serial port");

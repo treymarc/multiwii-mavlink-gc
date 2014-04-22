@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
     groundStationAddr.sin_addr.s_addr = inet_addr(targetIp);
     groundStationAddr.sin_port = htons(14550);
 
-    serialLink = MWIserialbuffer_init(serialDevice);
+    serialLink = MWIserialbuffer_init(serialDevice, SERIAL_DEFAULT_BAUDRATE);
 
     if (serialLink == NOK) {
         perror("error opening serial port");
@@ -188,8 +188,8 @@ int main(int argc, char* argv[])
     }
 
     // init mwi state
-    mwiState = calloc(sizeof(*mwiState),sizeof(*mwiState));
-    mwiState->mode = MAV_MODE_PREFLIGHT; // initial mode is unknow
+    mwiState = calloc(sizeof(*mwiState), sizeof(*mwiState));
+    mwiState->mode = MAV_MODE_MANUAL_DISARMED; // initial mode is unknow
     mwiState->callback = &callBack_mwi;
 
     MW_TRACE("starting..\n")
@@ -216,16 +216,18 @@ int main(int argc, char* argv[])
                 MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
                 MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
+
                 MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
 
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
                     lastHeartBeat = currentTime;
                     MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+                    MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
                 }
 
             } else {
                 MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_BOXNAMES);
             }
             //TODO
             //MSP_MOTOR
@@ -273,10 +275,44 @@ void callBack_mwi(int state)
     mavlink_message_t msg;
 
     uint64_t currentTime = microsSinceEpoch();
+    int i;
+
+    int gps = 0;
+    int armed = 0;
+    int stabilize = 0;
 
     switch (state) {
         case MSP_IDENT:
-            mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, MAV_STATE_ACTIVE);
+
+            for (i = 0; i < mwiState->boxcount; i++) {
+                (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
+                if (0==strcmp(mwiState->box[i]->name, "ARM")) {
+                    armed = mwiState->box[i]->state;
+                }
+                if (0==strcmp(mwiState->box[i]->name, "HORIZON")) {
+                    stabilize = mwiState->box[i]->state;
+                }
+            }
+
+            if (gps && armed && stabilize)
+                mwiState->mode = MAV_MODE_GUIDED_ARMED;
+			
+            else if (gps && !armed && stabilize)
+                mwiState->mode = MAV_MODE_GUIDED_DISARMED;
+
+            else if (!gps && armed && !stabilize)
+                mwiState->mode = MAV_MODE_MANUAL_ARMED;
+
+            else if (!gps && !armed && !stabilize)
+                mwiState->mode = MAV_MODE_MANUAL_DISARMED;
+
+            else if (!gps && armed && stabilize)
+                mwiState->mode = MAV_MODE_STABILIZE_ARMED;
+
+            else if (!gps && !armed && stabilize)
+                mwiState->mode = MAV_MODE_STABILIZE_DISARMED;
+
+            mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mwiState->mode, 0, armed ? MAV_STATE_ACTIVE :MAV_STATE_STANDBY );
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 
@@ -286,7 +322,7 @@ void callBack_mwi(int state)
 
         case MSP_STATUS:
             /* Send Status */
-            mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->present, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0, mwiState->serialErrorsCount, mwiState->i2cError, 0, 0, 0);
+            mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->bytevbat * 1000, mwiState->pMeterSum, -1, 0, mwiState->serialErrorsCount, mwiState->i2cError, 0, 0, 0);
             len = mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
 

@@ -17,6 +17,7 @@
  ****************************************************************************/
 #include <sys/time.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../include/utils.h"
 #include "mwi.h"
 
@@ -46,9 +47,9 @@ void setState(int aState);
 
 void decode(mwi_uav_state_t *mwiState);
 
-HANDLE MWIserialbuffer_init(const char* serialport)
+HANDLE MWIserialbuffer_init(const char* serialport, int baudrate)
 {
-    return serialport_init(serialport, SERIAL_DEFAULT_BAUDRATE);
+    return serialport_init(serialport, baudrate);
 }
 
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID)
@@ -124,23 +125,22 @@ void decode(mwi_uav_state_t *mwiState)
             MW_TRACE("MSP_IDENT\n")
             mwiState->version = read8();
             mwiState->multiType = read8();
+            mwiState->mspVersion = read8();
+            mwiState->capability = read32();
             break;
 
         case MSP_STATUS:
             MW_TRACE("MSP_STATUS\n")
             mwiState->cycleTime = read16();
             mwiState->i2cError = read16();
-            mwiState->present = read16();
-            mwiState->mode = read16();
-            //MAV_MODE_STABILIZE_ARMED
-            // if ((present&1) >0) {buttonAcc.setColorBackground(green_);} else {buttonAcc.setColorBackground(red_);tACC_ROLL.setState(false); tACC_PITCH.setState(false); tACC_Z.setState(false);}
-            // if ((present&2) >0) {buttonBaro.setColorBackground(green_);} else {buttonBaro.setColorBackground(red_); tBARO.setState(false); }
-            // if ((present&4) >0) {buttonMag.setColorBackground(green_);} else {buttonMag.setColorBackground(red_); tMAGX.setState(false); tMAGY.setState(false); tMAGZ.setState(false); }
-            // if ((present&8) >0) {buttonGPS.setColorBackground(green_);} else {buttonGPS.setColorBackground(red_); tHEAD.setState(false);}
-            // if ((present&16)>0) {buttonSonar.setColorBackground(green_);} else {buttonSonar.setColorBackground(red_);}
-            // for(i=0;i<CHECKBOXITEMS;i++) {
-            //   if ((mode&(1<<i))>0) buttonCheckbox[i].setColorBackground(green_); else buttonCheckbox[i].setColorBackground(red_);
-            // }
+            mwiState->sensors = read16();
+            mwiState->mode = read32();
+            mwiState->profile = read8();
+
+            for (i = 0; i < mwiState->boxcount; i++) {
+                (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
+                //printf("%s = %d",(mwiState->box[i])->name,(mwiState->box[i])->state);
+            }
             break;
 
         case MSP_RAW_IMU:
@@ -276,7 +276,29 @@ void decode(mwi_uav_state_t *mwiState)
 
         case MSP_BOXNAMES:
             MW_TRACE("MSP_BOXNAMES\n")
-            strcpy(mwiState->boxnames, frame);
+            char boxnames[256] = "";
+            strcpy(boxnames, frame);
+            char* boxname = NULL;
+            if (strlen(boxnames) < 1)
+                return;
+
+            memmove(boxnames, boxnames+1, strlen(boxnames));
+            boxname = strtok(boxnames, ";");
+            mwiState->boxcount = 0;
+
+            while (boxname != NULL) {
+                if (mwiState->box[mwiState->boxcount] != 0){
+                    free(mwiState->box[mwiState->boxcount]);
+                }
+                mwiState->box[mwiState->boxcount] = malloc(sizeof(*mwiState->box[mwiState->boxcount]));
+
+                strcpy(mwiState->box[mwiState->boxcount]->name, boxname);
+
+                MW_TRACE(boxname)
+                MW_TRACE("\n")
+                mwiState->boxcount += 1;
+                boxname = strtok(NULL, ";");
+            }
             break;
 
         case MSP_PIDNAMES:

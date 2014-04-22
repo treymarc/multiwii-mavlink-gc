@@ -26,14 +26,19 @@
 #define DEBUGITEMS 4
 // mwi data
 typedef struct {
+    char name[32];
+    int state;
+}mwi_box_t;
 
-    char boxnames[256];
-    int present, mode;
+typedef struct mwi_uav_state_t{
+
+    mwi_box_t* box[32];
+    int version, sensors, mode, profile, boxcount;
+    int capability, mspVersion;
     int mot[8];
     int servo[8];
     int debug[4];
 
-    int version;
     int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, head, angx, angy;
 
     int GPS_distanceToHome, GPS_directionToHome;
@@ -55,7 +60,6 @@ typedef struct {
     int serialErrorsCount;
 
     void (*callback)(int);
-
 } mwi_uav_state_t;
 
 #define   MWI_FULLFRAME_SIZE 64
@@ -111,7 +115,7 @@ typedef struct {
 // mwi binary protocol
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
-HANDLE MWIserialbuffer_init(const char* serialport);
+HANDLE MWIserialbuffer_init(const char* serialport, int baudrate);
 uint64_t microsSinceEpoch(void);
 
 #endif
