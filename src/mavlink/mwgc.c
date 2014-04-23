@@ -98,7 +98,7 @@ int identSended = NOK;
 HANDLE serialLink = 0;
 int autoTelemtry = 0;
 int baudrate = SERIAL_115200_BAUDRATE;
-uint32_t herz = 30;
+uint32_t hertz = 30;
 SOCKET sock;
 short mwiUavID;
 SOCKADDR_IN groundStationAddr;
@@ -155,15 +155,15 @@ int main(int argc, char* argv[])
             } else if (strcmp(argv[i], "-baudrate") == 0) {
                 baudrate = atoi(argv[i + 1]);
                 i++;
-            } else if (strcmp(argv[i], "-herz") == 0) {
-                herz = atoi(argv[i + 1]);
+            } else if (strcmp(argv[i], "-hertz") == 0) {
+                hertz = atoi(argv[i + 1]);
                 i++;
             }
         }
     }
 
-    if (herz > 60)
-        herz = 60;
+    if (hertz > 60)
+        hertz = 60;
 
     printf("ground station ip: %s\n", targetIp);
     printf("serial link: %s\n", serialDevice);
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
 
         currentTime = microsSinceEpoch();
 
-        if (!autoTelemtry && ((currentTime - lastFrameRequest) > (1000 * (1000 / herz)))) {
+        if (!autoTelemtry && ((currentTime - lastFrameRequest) > (1000 * (1000 / hertz)))) {
             lastFrameRequest = currentTime;
             if (identSended == OK) {
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
@@ -642,7 +642,7 @@ void rtfmHelp(void)
     printf("\t  -telemetryauto <int>\n");
     printf("\t   1 : assume the flight controler will send data\n");
     printf("\t   0 : send request for each data (default)\n\n");
-    printf("\t  -herz <int>\n");
+    printf("\t  -hertz <int>\n");
     printf("\t   Serial refresh for the imu. Default is 30, max is 60\n\n");
     printf("\t--help");
     printf("\t  display this message\n\n");
