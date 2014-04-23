@@ -41,7 +41,7 @@ typedef struct mwi_uav_state_t {
     int gx, gy, gz, ax, ay, az, magx, magy, magz, baro, vario, head, angx, angy;
 
     int GPS_distanceToHome, GPS_directionToHome;
-    int GPS_numSat, GPS_fix, GPS_update,  GPS_speed,GPS_heading;
+    int GPS_numSat, GPS_fix, GPS_update, GPS_speed, GPS_heading;
     uint16_t GPS_altitude;
     int GPS_latitude, GPS_longitude;
     int time1, time2;
@@ -57,7 +57,7 @@ typedef struct mwi_uav_state_t {
     int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
 
     int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
-    int byteRC_RATE, byteRC_EXPO, byteRollPitchRate,byteRC_thrMid, byteRC_thrExpo, byteYawRate, byteDynThrPID;
+    int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteRC_thrMid, byteRC_thrExpo, byteYawRate, byteDynThrPID;
     int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
 
     int serialErrorsCount;

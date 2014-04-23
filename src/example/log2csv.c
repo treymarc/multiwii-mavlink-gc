@@ -18,6 +18,7 @@
 
  ****************************************************************************/
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include "../include/utils.h"
@@ -53,7 +54,7 @@ int main(int argc, char* argv[])
     }
 
     // mwi state
-    mwiState = calloc(sizeof(*mwiState),sizeof(*mwiState));
+    mwiState = calloc(sizeof(*mwiState), sizeof(*mwiState));
     mwiState->callback = &callBack_mwi;
 
     uint64_t lastFrameRequest = 0;
@@ -98,9 +99,9 @@ void callBack_mwi(int state)
             break;
         default:
             currentTime = microsSinceEpoch();
-            printf("%ju;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n", currentTime, mwiState->angx, mwiState->angy, mwiState->head, mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx,
-                    mwiState->magy, mwiState->magz,mwiState->GPS_latitude,mwiState->GPS_longitude, mwiState->GPS_altitude, mwiState->GPS_numSat, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5], mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw, mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2,
-                    mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
+            printf("%ju;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n", currentTime, mwiState->angx, mwiState->angy, mwiState->head, mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz,
+                    mwiState->magx, mwiState->magy, mwiState->magz, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude, mwiState->GPS_numSat, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5],
+                    mwiState->rcRoll, mwiState->rcPitch, mwiState->rcYaw, mwiState->rcThrottle, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2], mwiState->debug[3]);
             break;
     }
 

@@ -67,14 +67,14 @@ int serialport_readChar(HANDLE fd, char* buf)
 {
     char b[1];
     int n = 0;
-
 #if defined (_WINDOZ)
     n =serialport_readwin(fd,b, 1);
 #else
     n = read(fd, b, 1);
 #endif
+    if ((n == 1))
+        strcpy(buf, b);
 
-    strcpy(buf, b);
     return (n == 1);
 }
 
@@ -127,31 +127,26 @@ HANDLE serialport_init(const char* serialport, int baudrate)
         return NOK;
     }
 
-
     switch (baudrate) {
-
-        case SERIAL_57600_BAUDRATE:
-            cfsetispeed(&toptions, B57600);
-            cfsetospeed(&toptions, B57600);
-            break;
-        case SERIAL_38400_BAUDRATE:
-            cfsetispeed(&toptions, B38400);
-            cfsetospeed(&toptions, B38400);
+        case SERIAL_9600_BAUDRATE:
+            baudrate = B9600;
             break;
         case SERIAL_19200_BAUDRATE:
-            cfsetispeed(&toptions, B19200);
-            cfsetospeed(&toptions, B19200);
+            baudrate = B19200;
             break;
-        case SERIAL_9600_BAUDRATE:
-            cfsetispeed(&toptions, B9600);
-            cfsetospeed(&toptions, B9600);
+        case SERIAL_38400_BAUDRATE:
+            baudrate = B38400;
+            break;
+        case SERIAL_57600_BAUDRATE:
+            baudrate = B57600;
             break;
         case SERIAL_115200_BAUDRATE:
         default:
-            cfsetispeed(&toptions, B115200);
-            cfsetospeed(&toptions, B115200);
+            baudrate = B115200;
             break;
     }
+    cfsetispeed(&toptions, baudrate);
+    cfsetospeed(&toptions, baudrate);
 
     // set parity8N1
     toptions.c_cflag &= ~PARENB;

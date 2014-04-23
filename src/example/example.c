@@ -18,6 +18,7 @@
 
  ****************************************************************************/
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include "../include/utils.h"
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
 
     // mwi state
     mwi_uav_state_t *mwiState;
-    mwiState = calloc(sizeof(*mwiState),sizeof(*mwiState));
+    mwiState = calloc(sizeof(*mwiState), sizeof(*mwiState));
     mwiState->callback = &callBack_mwi;
 
     uint64_t lastFrameRequest = 0;

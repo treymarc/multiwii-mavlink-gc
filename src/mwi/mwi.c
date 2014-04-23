@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "../include/utils.h"
 #include "mwi.h"
 
@@ -308,7 +309,7 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
     uint8_t readbuffer[1]; //
     uint8_t checksum = 0; //
     uint8_t dataSize = 0; // size of the incoming payload
-
+    uint8_t cmd = 0;
     while (serialport_readChar(serialPort, (char *)readbuffer)) {
 
         switch (stateMSP) {
@@ -361,6 +362,8 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                 // pass the command byte to the ByteBuffer handler also
                 save(readbuffer[0]);
                 setState(HEADER_CMD);
+
+                cmd = readbuffer[0];
                 break;
 
             case HEADER_CMD: // got cmd, expect payload, if any, then checksum
@@ -373,7 +376,8 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                     // done reading, reset the decoder for next byte
                     setState(IDLE);
                     if ((checksum & MASK) != readbuffer[0]) {
-                        MW_TRACE("msp checksum failed\n")
+                        //MW_TRACE("msp checksum failed\n")
+                        printf("msp checksum failed : cmd [%i]\n", (uint8_t)cmd);
                         mwiState->serialErrorsCount += 1;
                     } else {
                         decode(mwiState);
