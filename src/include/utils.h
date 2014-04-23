@@ -41,8 +41,8 @@ typedef unsigned short HANDLE;
 /*
  * log level
  */
-#if !defined(_LOGLEVL)
-#define _LOGLEVL 0
+#if !defined(_LOGLEVEL)
+#define _LOGLEVEL 0
 #endif
 
 /*
@@ -50,7 +50,7 @@ typedef unsigned short HANDLE;
  */
 #define MW_ERROR(x) printf(x);
 
-#if (_LOGLEVL>2)
+#if (_LOGLEVEL>2)
 #include <stdio.h>
 
 #define MW_INFO(x) printf(x);

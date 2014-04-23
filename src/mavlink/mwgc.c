@@ -101,12 +101,12 @@ int baudrate = SERIAL_115200_BAUDRATE;
 uint32_t herz = 30;
 SOCKET sock;
 short mwiUavID;
-SOCKADDR_IN groundStationAddr = { 0 };
+SOCKADDR_IN groundStationAddr;
 int sizeGroundStationAddr = sizeof groundStationAddr;
 
 int main(int argc, char* argv[])
 {
-
+    memset(&groundStationAddr, 0, sizeof(groundStationAddr));
 #if defined( _WINDOZ )
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2,0), &WSAData);
@@ -189,12 +189,14 @@ int main(int argc, char* argv[])
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(EXIT_FAILURE);
     }
+#define SOCKLEN_T_INT(fromlen) ((int*)fromlen)
 #else
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         close(sock);
         eexit(EXIT_FAILURE);
     }
+#define SOCKLEN_T_INT(fromlen) fromlen
 #endif
 
     groundStationAddr.sin_family = AF_INET;
@@ -266,7 +268,7 @@ int main(int argc, char* argv[])
         //  udp in
         memset(udpInBuf, 0, BUFFER_LENGTH);
 
-        recsize = recvfrom(sock, (void *)udpInBuf, BUFFER_LENGTH, 0, (SOCKADDR *)&groundStationAddr, &fromlen);
+        recsize = recvfrom(sock, (void *)udpInBuf, BUFFER_LENGTH, 0, (SOCKADDR *)&groundStationAddr, SOCKLEN_T_INT(&fromlen));
 
         if (recsize > 0) {
             MW_TRACE("\n")MW_TRACE(" <-- udp in <--\n")

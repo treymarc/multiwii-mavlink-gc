@@ -11,9 +11,14 @@ Multiwii Serial Protocol log to csv
 Build from source 
 ===================
 	
-Windows and Linux Arch :
+Windows and Linux, unzip and type:
 
 	$ make
+	
+build with debug messages, show messages:
+
+	$ make VERBOSE=3
+
 
 
 Run

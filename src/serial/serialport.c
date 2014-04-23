@@ -189,8 +189,8 @@ HANDLE serialport_initWin(const char *portName, int baudrate)
     }
 
     //If connected we try to set the comm parameters
-    DCB dcbSerialParams = {0};
-
+    DCB dcbSerialParams ;
+    memset(&dcbSerialParams, 0, sizeof(dcbSerialParams));
     //Try to get the current
     if (!GetCommState(fd, &dcbSerialParams)) {
         //If impossible, show an error
