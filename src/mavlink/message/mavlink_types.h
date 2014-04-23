@@ -26,7 +26,7 @@ typedef struct param_union {
 		uint32_t param_uint32;
 		uint8_t param_uint8;
 		uint8_t bytes[4];
-	};
+	}value;
 	uint8_t type;
 } mavlink_param_union_t;
 

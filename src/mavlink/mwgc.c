@@ -66,6 +66,12 @@ typedef struct in_addr IN_ADDR;
 #include "../mwi/mwi.h"
 #include "../include/utils.h"
 
+/*
+ * math
+ */
+#define PI 3.1415926535897932384626433832795
+#define deg2radian(X) (PI * X) / 180
+
 // mavlink message headers
 #define  MAVLINK_EXTERNAL_RX_BUFFER 0
 #include "message/common/mavlink.h"
@@ -95,7 +101,8 @@ int baudrate = SERIAL_115200_BAUDRATE;
 uint32_t herz = 30;
 SOCKET sock;
 short mwiUavID;
-struct sockaddr_in groundStationAddr;
+SOCKADDR_IN groundStationAddr = { 0 };
+int sizeGroundStationAddr = sizeof groundStationAddr;
 
 int main(int argc, char* argv[])
 {
@@ -155,9 +162,8 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (herz>60)
+    if (herz > 60)
         herz = 60;
-
 
     printf("ground station ip: %s\n", targetIp);
     printf("serial link: %s\n", serialDevice);
@@ -178,7 +184,7 @@ int main(int argc, char* argv[])
 
     // Attempt to make it non blocking
 #if defined(_WINDOZ)
-    int arg = 1;
+    u_long arg = 1;
     if(ioctlsocket(sock, FIONBIO, &arg )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(EXIT_FAILURE);
@@ -191,7 +197,6 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    memset(&groundStationAddr, 0, sizeof(groundStationAddr));
     groundStationAddr.sin_family = AF_INET;
     groundStationAddr.sin_addr.s_addr = inet_addr(targetIp);
     groundStationAddr.sin_port = htons(14550);
@@ -261,7 +266,7 @@ int main(int argc, char* argv[])
         //  udp in
         memset(udpInBuf, 0, BUFFER_LENGTH);
 
-        recsize = recvfrom(sock, (void *)udpInBuf, BUFFER_LENGTH, 0, (struct sockaddr *)&groundStationAddr, &fromlen);
+        recsize = recvfrom(sock, (void *)udpInBuf, BUFFER_LENGTH, 0, (SOCKADDR *)&groundStationAddr, &fromlen);
 
         if (recsize > 0) {
             MW_TRACE("\n")MW_TRACE(" <-- udp in <--\n")
@@ -335,8 +340,9 @@ void callBack_mwi(int state)
                 mavState = MAV_MODE_STABILIZE_DISARMED;
 
             mavlink_msg_heartbeat_pack(mwiUavID, 200, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mavState, 0, armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             identSended = OK;
 
@@ -346,57 +352,57 @@ void callBack_mwi(int state)
             // Send Status
             mavlink_msg_sys_status_pack(mwiUavID, 200, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
                     mwiState->debug[2], mwiState->debug[3]);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
         case MSP_RAW_IMU:
             // Send raw imu
             mavlink_msg_raw_imu_pack(mwiUavID, 200, &msg, currentTime, mwiState->ax, mwiState->ay, mwiState->az, mwiState->gx, mwiState->gy, mwiState->gz, mwiState->magx, mwiState->magy, mwiState->magz);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
         case MSP_SERVO:
             // Send servo - SERVO_CHAN
             mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, SERVO_CHAN, mwiState->servo[0], mwiState->servo[1], mwiState->servo[2], mwiState->servo[3], mwiState->servo[4], mwiState->servo[5], mwiState->servo[6], mwiState->servo[7]);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
         case MSP_MOTOR:
             // Send servo - MOTOR_CHAN
             mavlink_msg_servo_output_raw_pack(mwiUavID, 200, &msg, currentTime, MOTOR_CHAN, mwiState->mot[0], mwiState->mot[1], mwiState->mot[2], mwiState->mot[3], mwiState->mot[4], mwiState->mot[5], mwiState->mot[6], mwiState->mot[7]);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
         case MSP_RC:
             // Send rcDate
             mavlink_msg_rc_channels_raw_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, 255);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             // Send update hud
             mavlink_msg_vfr_hud_pack(mwiUavID, 200, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, mwiState->baro / 100.0f, mwiState->vario / 100.0f);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
         case MSP_RAW_GPS:
             // Send gps
             mavlink_msg_gps_raw_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 1000.0, 0, 0, mwiState->GPS_speed, mwiState->GPS_numSat, 0);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             mavlink_msg_global_position_int_pack(mwiUavID, 200, &msg, currentTime, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro * 10, 0, 0, 0, 0);
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
             break;
 
@@ -406,15 +412,15 @@ void callBack_mwi(int state)
         case MSP_ATTITUDE:
             // Send attitude
             mavlink_msg_attitude_pack(mwiUavID, 200, &msg, currentTime, deg2radian(mwiState->angx), -deg2radian(mwiState->angy), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy), deg2radian(mwiState->gz));
-            len = mavlink_msg_to_send_buffer(buf, &msg);
-            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
             break;
 
         case MSP_ALTITUDE:
             // Send Local Position - unused without other sensors or gps cord
 //            mavlink_msg_local_position_ned_pack(mwiUavID, 200, &msg, currentTime, 0, 0, 0, 0, 0, 0);
-//            len = mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
             break;
 
         case MSP_ANALOG: // TODO SEND
@@ -444,20 +450,20 @@ void callBack_mwi(int state)
         case MSP_DEBUG:
             // Send debug , see status error value
 //            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->debug[0]);
-//            len = mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
 //
 //            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 2, mwiState->debug[1]);
-//            len = mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
 //
 //            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 3, mwiState->debug[2]);
-//            len = mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
 //
 //            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 4, mwiState->debug[3]);
-//            len = mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeof(struct sockaddr_in));
+//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
             break;
 
         case MSP_BOXNAMES:

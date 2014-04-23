@@ -30,14 +30,7 @@ typedef unsigned short HANDLE;
 /*
  * version
  */
-#define MWGC_VERSION "SNAPSHOT-2013.12.14"
-
-/*
- * log level
- */
-#if !defined(_LOGLEVL)
-#define _LOGLEVL 0
-#endif
+#define MWGC_VERSION "SNAPSHOT-2014.04.23"
 
 /*
  * logic
@@ -46,10 +39,11 @@ typedef unsigned short HANDLE;
 #define OK 1
 
 /*
- * math
+ * log level
  */
-#define PI 3.1415926535897932384626433832795
-#define deg2radian(X) (PI * X) / 180
+#if !defined(_LOGLEVL)
+#define _LOGLEVL 0
+#endif
 
 /*
  * log
