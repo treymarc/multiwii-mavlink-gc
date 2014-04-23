@@ -36,7 +36,7 @@ read data from COM4 and broadcast to groundStation running at ip 192.168.0.13
 
 you can change the refresh rate or the baudrate
 
-	"mwgc -s /dev/ttyUSB0 -herz 50 -baudrate 57600"
+	"mwgc -s /dev/ttyUSB0 -hertz 50 -baudrate 57600"
 	
 Windows
 -------------
