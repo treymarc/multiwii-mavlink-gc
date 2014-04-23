@@ -8,7 +8,11 @@
 
 EXAMPLE_SRC_DIR	:= src$(PATH_SEP)example
 EXAMPLE_SRC_CFLAGS	:=  
-EXAMPLE_SRC_TARGETS	:=  example log2csv
+EXAMPLE_SRC_TARGETS	:=  example log2csv gps
+
+
+$(EXAMPLE_SRC_DIR)$(PATH_SEP)gps: $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.o $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o
+	$(CC) $(EXAMPLE_SRC_CFLAGS) $(LDFLAGS) -o $@ $^ $(WINOP)
 
 
 $(EXAMPLE_SRC_DIR)$(PATH_SEP)example: $(EXAMPLE_SRC_DIR)$(PATH_SEP)example.o $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o
@@ -27,6 +31,8 @@ $(EXAMPLE_SRC_DIR)$(PATH_SEP)example.o: $(EXAMPLE_SRC_DIR)$(PATH_SEP)example.c
 $(EXAMPLE_SRC_DIR)$(PATH_SEP)log2csv.o: $(EXAMPLE_SRC_DIR)$(PATH_SEP)log2csv.c  
 	$(CC) $(CFLAGS) $(EXAMPLE_SRC_CFLAGS) -c $< -o $@
 
+$(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.o: $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.c  
+	$(CC) $(CFLAGS) $(EXAMPLE_SRC_CFLAGS) -c $< -o $@
 
 #
 #
@@ -38,6 +44,8 @@ clean-example:
 	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)*.o
 	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)example$(EXE_SUFIX)
 	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)log2csv$(EXE_SUFIX)
+	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps$(EXE_SUFIX)
+	
 	
 all: all-example
 

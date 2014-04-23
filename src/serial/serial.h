@@ -26,7 +26,7 @@
 HANDLE serialport_init(const char* serialport, int i);
 
 int serialport_writeChar(HANDLE fd, char b);
-int serialport_write(HANDLE fd, char* str);
+int serialport_write(HANDLE fd, char* str, int len);
 
 int serialport_readChar(HANDLE fd, char* buf);
 int serialport_readUntil(HANDLE fd, char* buf, char until);

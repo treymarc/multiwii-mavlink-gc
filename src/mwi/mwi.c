@@ -53,24 +53,27 @@ HANDLE MWIserialbuffer_init(const char* serialport, int baudrate)
     return serialport_init(serialport, baudrate);
 }
 
-int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID)
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, char payload[], int payloadz)
 {
-    char msg[6];
+    char msg[255];
     int hash = 0;
-    int payloadz = 0;
-
+    int i;
     hash ^= payloadz;
     hash ^= MSP_ID;
 
-    //strcpy(msg, GS_TO_FC);
     msg[0] = MSP_HEAD1;
     msg[1] = MSP_HEAD2;
     msg[2] = MSP_TO_GC;
     msg[3] = payloadz;
     msg[4] = MSP_ID;
-    msg[5] = hash;
 
-    if (serialport_write(serialPort, msg) == -1) {
+    for (i = 0; i < payloadz; i++) {
+        hash ^= payload[i];
+        msg[5 + i] = payload[i];
+    }
+    msg[5 + i] = hash;
+
+    if (serialport_write(serialPort, msg, 6 + payloadz) == -1) {
         // fail to write command to serial port
         return NOK;
     }
@@ -300,6 +303,15 @@ void decode(mwi_uav_state_t *mwiState)
         case MSP_PRIVATE:
             MW_TRACE("MSP_PRIVATE\n")
             break;
+
+        case MSP_SET_RAW_RC:
+            MW_TRACE("MSP_SET_RAW_RC\n")
+            break;
+
+        case MSP_SET_RAW_GPS:
+            MW_TRACE("MSP_SET_RAW_GPS\n")
+            break;
+
     }
     mwiState->callback(recievedCmd);
 }

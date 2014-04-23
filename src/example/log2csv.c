@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
 
     printf("currentTime;angx;angy;head;ax;ay;az;gx;gy;gz;magx;magy;magz;lat;lon;alt;numsat;mot[0];mot[1];mot[2];mot[3];mot[4];mot[5];rcRoll;rcPitch;rcYaw;rcThrottle;rcAUX1;rcAUX2;rcAUX3;rcAUX4;debug1;debug2;debug3;debug4\n");
 
+    char payload[] = "";
     for (;;) {
 
         currentTime = microsSinceEpoch();
@@ -68,20 +69,20 @@ int main(int argc, char* argv[])
         if ((currentTime - lastFrameRequest) > 1000 * 30) {
             if (initOk == OK) {
                 lastFrameRequest = currentTime;
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE);
-                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RC);
-                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR);
-                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU);
-                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RC, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE, payload,0);
             } else {
-                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT);
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload,0);
             }
         }
 

@@ -127,7 +127,7 @@ typedef struct mwi_uav_state_t {
 
 // serial impl mwi.c
 // mwi binary protocol
-int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID);
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID,char payload[],int payloadz);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
 HANDLE MWIserialbuffer_init(const char* serialport, int baudrate);
 uint64_t microsSinceEpoch(void);

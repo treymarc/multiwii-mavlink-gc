@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright (C) 2013  Trey Marc ( a t ) gmail.com
+ Copyright (C) 2014  Trey Marc ( a t ) gmail.com
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
- -2013.12.18 : demo code
+ -2013.12.18 : payload demo set raw gps values
 
  ****************************************************************************/
 #include <stdlib.h>
@@ -67,24 +67,32 @@ int main(int argc, char* argv[])
         if ((currentTime - lastFrameRequest) > 1000 * 30) {
             if (initOk == OK) {
                 lastFrameRequest = currentTime;
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RC, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_STATUS, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE, payload,0);
+                char payld[14];
 
+                payld[0] = 1 >> 8; //  f.GPS_FIX
+                payld[1] = 5 >> 8; //  GPS_numSat
 
+                payld[2] = (450000000); //GPS_coord[LAT]
+                payld[3] = ((450000000) >> 8);
+                payld[4] = ((450000000) >> 16);
+                payld[5] = ((450000000) >> 24);
+
+                payld[6] = (450000000); // GPS_coord[LON]
+                payld[7] = ((450000000) >> 8);
+                payld[8] = ((450000000) >> 16);
+                payld[8] = ((450000000) >> 24);
+
+                payld[10] = (1000 && 0xFF); //GPS_altitude
+                payld[11] = ((1000 && 0xFF) >> 8);
+
+                payld[12] = (10 && 0xFF); // GPS_speed
+                payld[13] = ((10 && 0xFF) >> 8);
+
+                MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payld, 14);
 
             } else {
-                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload,0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE, payload,0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload, 0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE, payload, 0);
             }
         }
 

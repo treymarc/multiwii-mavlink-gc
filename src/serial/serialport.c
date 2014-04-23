@@ -47,9 +47,9 @@ int serialport_writeChar(HANDLE fd, char b)
     return 0;
 }
 
-int serialport_write(HANDLE fd, char* str)
+int serialport_write(HANDLE fd, char* str, int len)
 {
-    int len = 6;
+//    int len = 6;
     //int len = strlen(str);
 
 #if defined (_WINDOZ)
@@ -189,7 +189,7 @@ HANDLE serialport_initWin(const char *portName, int baudrate)
     }
 
     //If connected we try to set the comm parameters
-    DCB dcbSerialParams ;
+    DCB dcbSerialParams;
     memset(&dcbSerialParams, 0, sizeof(dcbSerialParams));
     //Try to get the current
     if (!GetCommState(fd, &dcbSerialParams)) {
