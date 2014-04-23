@@ -14,7 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
- -2013.12.18 : payload demo set raw gps values
+     -2014.04.23 : payload demo set raw gps values
+         TODO , write16:32 helper
 
  ****************************************************************************/
 #include <stdlib.h>
@@ -69,30 +70,34 @@ int main(int argc, char* argv[])
                 lastFrameRequest = currentTime;
                 char payld[14];
 
-                payld[0] = 1 >> 8; //  f.GPS_FIX
+                payld[0] = 1 >> 8; //  GPS_FIX
                 payld[1] = 5 >> 8; //  GPS_numSat
 
-                payld[2] = (450000000); //GPS_coord[LAT]
+                //GPS_coord[LAT] / 90
+                payld[2] = (450000000);
                 payld[3] = ((450000000) >> 8);
                 payld[4] = ((450000000) >> 16);
                 payld[5] = ((450000000) >> 24);
 
-                payld[6] = (450000000); // GPS_coord[LON]
+                // GPS_coord[LON]/ 180
+                payld[6] = (450000000);
                 payld[7] = ((450000000) >> 8);
                 payld[8] = ((450000000) >> 16);
                 payld[8] = ((450000000) >> 24);
 
-                payld[10] = (1000 && 0xFF); //GPS_altitude
+                //GPS_altitude
+                payld[10] = (1000 && 0xFF);
                 payld[11] = ((1000 && 0xFF) >> 8);
 
-                payld[12] = (10 && 0xFF); // GPS_speed
+                // GPS_speed
+                payld[12] = (10 && 0xFF);
                 payld[13] = ((10 && 0xFF) >> 8);
 
                 MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payld, 14);
 
             } else {
                 MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE, payload, 0);
+
             }
         }
 
@@ -110,71 +115,6 @@ void callBack_mwi(int state)
             initOk = OK;
             break;
 
-        case MSP_STATUS:
-            break;
-
-        case MSP_RAW_IMU:
-            break;
-
-        case MSP_SERVO:
-            break;
-
-        case MSP_MOTOR:
-            break;
-
-        case MSP_RC:
-            break;
-
-        case MSP_RAW_GPS:
-            break;
-
-        case MSP_COMP_GPS:
-            break;
-
-        case MSP_ATTITUDE:
-            break;
-
-        case MSP_ALTITUDE:
-            break;
-
-        case MSP_ANALOG:
-            break;
-
-        case MSP_RC_TUNING:
-            break;
-
-        case MSP_ACC_CALIBRATION:
-            break;
-
-        case MSP_MAG_CALIBRATION:
-            break;
-
-        case MSP_PID:
-            break;
-
-        case MSP_BOX:
-            break;
-
-        case MSP_MISC:
-            break;
-
-        case MSP_MOTOR_PINS:
-            break;
-
-        case MSP_DEBUG:
-            break;
-
-        case MSP_BOXNAMES:
-            break;
-
-        case MSP_PIDNAMES:
-            break;
-
-        case MSP_PRIVATE:
-            break;
-
-        case NOK:
-            break;
     }
 
 }
