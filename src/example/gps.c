@@ -14,8 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     -2014.04.23 : payload demo set raw gps values
-         TODO , write16:32 helper
+ -2014.04.23 : payload demo set raw gps values
+
 
  ****************************************************************************/
 #include <stdlib.h>
@@ -60,7 +60,9 @@ int main(int argc, char* argv[])
     uint64_t lastFrameRequest = 0;
     uint64_t currentTime = microsSinceEpoch();
 
-    char payload[] = "";
+    msp_payload_t *payload;
+    payload = calloc(sizeof(*payload), sizeof(*payload));
+
     for (;;) {
 
         currentTime = microsSinceEpoch();
@@ -68,35 +70,19 @@ int main(int argc, char* argv[])
         if ((currentTime - lastFrameRequest) > 1000 * 30) {
             if (initOk == OK) {
                 lastFrameRequest = currentTime;
-                char payld[14];
 
-                payld[0] = 1 >> 8; //  GPS_FIX
-                payld[1] = 5 >> 8; //  GPS_numSat
+                payload->length = 0;
+                MWIserialbuffer_Payloadwrite8(payload, 1);          // GPS_FIX
+                MWIserialbuffer_Payloadwrite8(payload, 5);          // GPS_numSat
+                MWIserialbuffer_Payloadwrite32(payload, 4500000);   // GPS_coord[LAT] / 90
+                MWIserialbuffer_Payloadwrite32(payload, 4500000);   // GPS_coord[LON]/ 180
+                MWIserialbuffer_Payloadwrite16(payload, 1000);      // GPS_altitude
+                MWIserialbuffer_Payloadwrite16(payload, 1000);      // GPS_speed
 
-                //GPS_coord[LAT] / 90
-                payld[2] = (450000000);
-                payld[3] = ((450000000) >> 8);
-                payld[4] = ((450000000) >> 16);
-                payld[5] = ((450000000) >> 24);
-
-                // GPS_coord[LON]/ 180
-                payld[6] = (450000000);
-                payld[7] = ((450000000) >> 8);
-                payld[8] = ((450000000) >> 16);
-                payld[8] = ((450000000) >> 24);
-
-                //GPS_altitude
-                payld[10] = (1000 && 0xFF);
-                payld[11] = ((1000 && 0xFF) >> 8);
-
-                // GPS_speed
-                payld[12] = (10 && 0xFF);
-                payld[13] = ((10 && 0xFF) >> 8);
-
-                MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payld, 14);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payload);
 
             } else {
-                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload, 0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload);
 
             }
         }

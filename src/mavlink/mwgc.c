@@ -222,7 +222,8 @@ int main(int argc, char* argv[])
     uint64_t lastReaquestLowPriority = 0;
     uint64_t currentTime = microsSinceEpoch();
 
-    char payload[] = "";
+    msp_payload_t *payload;
+    payload = calloc(sizeof(*payload), sizeof(*payload));
     for (;;) {
 
         currentTime = microsSinceEpoch();
@@ -233,31 +234,30 @@ int main(int argc, char* argv[])
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
                     // ~ 2hz
                     lastHeartBeat = currentTime;
-                    MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload, 0);
-                    MWIserialbuffer_askForFrame(serialLink, MSP_STATUS, payload, 0);
+                    MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload);
+                    MWIserialbuffer_askForFrame(serialLink, MSP_STATUS, payload);
                 }
                 if ((currentTime - lastReaquestLowPriority) > 1000 * 90) {
                     // ~10hz
                     lastReaquestLowPriority = currentTime;
-                    MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG, payload, 0);
-                    MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS, payload, 0);
-                    MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS, payload, 0);
-                }
+                    MWIserialbuffer_askForFrame(serialLink, MSP_ANALOG, payload);
+                    MWIserialbuffer_askForFrame(serialLink, MSP_COMP_GPS, payload);
+                    MWIserialbuffer_askForFrame(serialLink, MSP_RAW_GPS, payload);
+                 }
 
                 // ~30 hz
-                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_RC, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG, payload, 0);
-
+                MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_ALTITUDE, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_RC, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_MOTOR, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_SERVO, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_DEBUG, payload);
 
             } else {
                 // we need boxnames
-                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload, 0);
-                MWIserialbuffer_askForFrame(serialLink, MSP_BOXNAMES, payload, 0);
+                MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload);
+                MWIserialbuffer_askForFrame(serialLink, MSP_BOXNAMES, payload);
             }
             //TODO
             //MSP_COMP_GPS
@@ -298,7 +298,6 @@ int main(int argc, char* argv[])
 #define MOTOR_CHAN  2
 void callBack_mwi(int state)
 {
-// mavlink msg
     int len = 0;
     uint8_t buf[BUFFER_LENGTH];
     mavlink_message_t msg;
@@ -452,22 +451,10 @@ void callBack_mwi(int state)
             break;
 
         case MSP_DEBUG:
-            // Send debug , see status error value
-//            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 1, mwiState->debug[0]);
-//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
-//
-//            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 2, mwiState->debug[1]);
-//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
-//
-//            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 3, mwiState->debug[2]);
-//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
-//
-//            mavlink_msg_debug_pack(mwiUavID, 200, &msg, currentTime, 4, mwiState->debug[3]);
-//            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
-//            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, size);
+            // Send extra debug values (uint32_t time_boot_ms)
+            mavlink_msg_debug_pack(mwiUavID, 200, &msg, (uint32_t)(currentTime/1000), 1, mwiState->serialErrorsCount);
+            len = (char)mavlink_msg_to_send_buffer(buf, &msg);
+            sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
             break;
 
         case MSP_BOXNAMES:

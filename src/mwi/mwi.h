@@ -24,6 +24,12 @@
 #define CHECKBOXITEMS 11
 #define PIDITEMS 8
 #define DEBUGITEMS 4
+
+typedef struct {
+    char payload[255];
+    int length;
+} msp_payload_t;
+
 // mwi data
 typedef struct {
     char name[32];
@@ -127,10 +133,14 @@ typedef struct mwi_uav_state_t {
 
 // serial impl mwi.c
 // mwi binary protocol
-int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID,char payload[],int payloadz);
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, msp_payload_t *payload);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
 HANDLE MWIserialbuffer_init(const char* serialport, int baudrate);
 uint64_t microsSinceEpoch(void);
+
+int MWIserialbuffer_Payloadwrite8(msp_payload_t *payload, int value);
+int MWIserialbuffer_Payloadwrite16(msp_payload_t *payload, int value);
+int MWIserialbuffer_Payloadwrite32(msp_payload_t *payload, int value);
 
 #endif
 

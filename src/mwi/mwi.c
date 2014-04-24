@@ -32,9 +32,9 @@
 
 #define BLENGTH 256
 
-char frame[BLENGTH]; // serial frame
-int readindex = 0; // read position in the serial frame
-int writeindex = 0; // write position in the serial frame
+char frame[BLENGTH];    // serial frame
+int readindex = 0;      // read position in the serial frame
+int writeindex = 0;     // write position in the serial frame
 
 uint8_t stateMSP = IDLE;
 
@@ -48,32 +48,57 @@ void setState(int aState);
 
 void decode(mwi_uav_state_t *mwiState);
 
+int MWIserialbuffer_Payloadwrite8(msp_payload_t *payload, int value)
+{
+    payload->payload[(payload->length)] = value;
+    payload->length = (payload->length) + 1;
+    return 1;
+}
+
+int MWIserialbuffer_Payloadwrite16(msp_payload_t *payload, int value)
+{
+    payload->payload[(payload->length)] = value;
+    payload->payload[(payload->length) + 1] = value >> 8;
+    payload->length = (payload->length) + 2;
+    return 1;
+}
+
+int MWIserialbuffer_Payloadwrite32(msp_payload_t *payload, int32_t value)
+{
+    payload->payload[(payload->length)] = value;
+    payload->payload[(payload->length) + 1] = value >> 8;
+    payload->payload[(payload->length) + 2] = value >> 16;
+    payload->payload[(payload->length) + 3] = value >> 24;
+    payload->length = (payload->length) + 4;
+    return 1;
+}
+
 HANDLE MWIserialbuffer_init(const char* serialport, int baudrate)
 {
     return serialport_init(serialport, baudrate);
 }
 
-int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, char payload[], int payloadz)
+int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, msp_payload_t *payload)
 {
     char msg[255];
     int hash = 0;
     int i;
-    hash ^= payloadz;
+    hash ^= payload->length;
     hash ^= MSP_ID;
 
     msg[0] = MSP_HEAD1;
     msg[1] = MSP_HEAD2;
     msg[2] = MSP_TO_GC;
-    msg[3] = payloadz;
+    msg[3] = payload->length;
     msg[4] = MSP_ID;
 
-    for (i = 0; i < payloadz; i++) {
-        hash ^= payload[i];
-        msg[5 + i] = payload[i];
+    for (i = 0; i < (payload->length); i++) {
+        hash ^= payload->payload[i];
+        msg[5 + i] = payload->payload[i];
     }
     msg[5 + i] = hash;
 
-    if (serialport_write(serialPort, msg, 6 + payloadz) == -1) {
+    if (serialport_write(serialPort, msg, 6 + payload->length) == -1) {
         // fail to write command to serial port
         return NOK;
     }
