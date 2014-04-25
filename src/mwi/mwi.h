@@ -22,7 +22,7 @@
 #define MWI_NS_H
 
 #define CHECKBOXITEMS 11
-#define PIDITEMS 8
+#define PIDITEMS 10
 #define DEBUGITEMS 4
 
 typedef struct {
@@ -64,6 +64,7 @@ typedef struct mwi_uav_state_t {
 
     int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
     int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteRC_thrMid, byteRC_thrExpo, byteYawRate, byteDynThrPID;
+
     int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
 
     int serialErrorsCount;

@@ -80,9 +80,6 @@ int main(int argc, char* argv[])
                 MWIserialbuffer_askForFrame(serialLink, MSP_RAW_IMU, payload);
                 MWIserialbuffer_askForFrame(serialLink, MSP_STATUS, payload);
                 MWIserialbuffer_askForFrame(serialLink, MSP_ATTITUDE, payload);
-
-
-
             } else {
                 MWIserialbuffer_askForFrame(serialLink, MSP_IDENT, payload);
                 MWIserialbuffer_askForFrame(serialLink, MSP_PRIVATE, payload);

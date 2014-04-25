@@ -24,7 +24,9 @@ CC	?= gcc
 
 CFLAGS	:= -std=c99 -pedantic -g -O3 
 
-CFLAGS	+= $(DWIN) -D_LOGLEVEL=$(VERBOSE) -D_GNU_SOURCE -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
+CFLAGS_MAVLINK = -DMAVLINK_EXTERNAL_RX_STATUS=0 -DMAVLINK_CHECK_MESSAGE_LENGTH=0
+
+CFLAGS	+= $(DWIN) -D_LOGLEVEL=$(VERBOSE) $(CFLAGS_MAVLINK) -D_GNU_SOURCE  -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
 		   -Wcast-align -Wwrite-strings -Wnested-externs -Winline \
 		   -W -Wundef -Wmissing-prototypes 
 
