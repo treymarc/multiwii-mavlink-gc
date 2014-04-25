@@ -315,9 +315,46 @@ void callBack_mwi(int state)
     int armed = 0;
     int stabilize = 0;
     int mavState = MAV_MODE_MANUAL_DISARMED;
+    int uavtype = MAV_TYPE_GENERIC;
 
     switch (state) {
         case MSP_IDENT:
+
+            switch(mwiState->multiType) {
+                case 1:
+                    uavtype = MAV_TYPE_TRICOPTER;
+                    break;
+                case 2:
+                    uavtype = MAV_TYPE_QUADROTOR;
+                    break;
+                case 3:
+                    uavtype = MAV_TYPE_QUADROTOR;
+                    break;
+                case 7:
+                    uavtype = MAV_TYPE_HEXAROTOR;
+                    break;
+                case 10:
+                    uavtype = MAV_TYPE_HEXAROTOR;
+                    break;
+                case 11:
+                    uavtype = MAV_TYPE_OCTOROTOR;
+                    break;
+                case 12:
+                    uavtype = MAV_TYPE_OCTOROTOR;
+                    break;
+                case 13:
+                    uavtype = MAV_TYPE_OCTOROTOR;
+                    break;
+                case 14:
+                    uavtype = MAV_TYPE_FIXED_WING;
+                    break;
+                case 18:
+                    uavtype = MAV_TYPE_HEXAROTOR;
+                    break;
+                case 20:
+                    uavtype = MAV_TYPE_HELICOPTER;
+                    break;
+            }
 
             for (i = 0; i < mwiState->boxcount; i++) {
                 (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
@@ -348,7 +385,7 @@ void callBack_mwi(int state)
             else if (!gps && !armed && stabilize)
                 mavState = MAV_MODE_STABILIZE_DISARMED;
 
-            mavlink_msg_heartbeat_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, mavState, 0, armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY);
+            mavlink_msg_heartbeat_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, uavtype, MAV_AUTOPILOT_GENERIC, mavState, 0, armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
 
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
