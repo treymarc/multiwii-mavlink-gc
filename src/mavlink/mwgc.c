@@ -320,7 +320,7 @@ void callBack_mwi(int state)
     switch (state) {
         case MSP_IDENT:
 
-            switch(mwiState->multiType) {
+            switch (mwiState->multiType) {
                 case 1:
                     uavtype = MAV_TYPE_TRICOPTER;
                     break;
@@ -396,7 +396,10 @@ void callBack_mwi(int state)
 
         case MSP_STATUS:
             // Send Status
-            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
+            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_3D_MAG, MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_3D_MAG, 0,
+                    (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
+//             mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
+
                     mwiState->debug[2], mwiState->debug[3]);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
@@ -521,7 +524,7 @@ void handleMessage(mavlink_message_t* currentMsg)
             mavlink_request_data_stream_t packet;
             mavlink_msg_request_data_stream_decode(currentMsg, &packet);
 
-			// todo stop msp request
+            // todo stop msp request
 //            int freq = 0; // packet frequency
 //            if (packet.start_stop == 0)
 //                freq = 0; // stop sending
@@ -530,7 +533,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 //            else
 //                break;
 
-			// todo adjust msp request
+            // todo adjust msp request
             switch (packet.req_stream_id) {
                 case MAV_DATA_STREAM_ALL:
                     // global_data.streamRateExtra3 = freq;
@@ -577,23 +580,23 @@ void handleMessage(mavlink_message_t* currentMsg)
 
             // Start sending parameters 
             int32_t i, p = 1;
-            char name[6] = "PID";
+            char name[8] = "PID_ _";
 
             for (i = 0; i < PIDITEMS; i++) {
-                name[3] = i + '0';
-                name[4] = 'P';
+                name[4] = i + '0';
+                name[6] = 'P';
                 mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteP[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
-                name[3] = i + '0';
-                name[4] = 'I';
+                name[4] = i + '0';
+                name[6] = 'I';
                 mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteI[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
-                name[3] = i + '0';
-                name[4] = 'D';
+                name[4] = i + '0';
+                name[6] = 'D';
                 mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteD[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
