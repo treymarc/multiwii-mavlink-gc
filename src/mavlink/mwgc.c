@@ -34,7 +34,6 @@
 
 #define BUFFER_LENGTH 2041 // minimum buffer size that can be used with qnx (I don't know why)
 
-
 // windows headers
 #if defined( _WINDOZ )
 
@@ -56,7 +55,6 @@ typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
-
 
 #endif
 
@@ -434,7 +432,7 @@ void callBack_mwi(int state)
 
         case MSP_RC:
             // Send rcDate
-            mavlink_msg_rc_channels_raw_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, currentTime, 1, mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, 255);
+            mavlink_msg_rc_channels_raw_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, currentTime / 1000, 1, mwiState->rcPitch, mwiState->rcRoll, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, 255);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
@@ -451,7 +449,7 @@ void callBack_mwi(int state)
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
-            mavlink_msg_global_position_int_pack(mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro * 10, 0, 0, 0, 0);
+            mavlink_msg_global_position_int_pack(mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime / 1000, mwiState->GPS_latitude, mwiState->GPS_longitude, mwiState->GPS_altitude * 10.0, mwiState->baro * 10, 0, 0, 0, 0);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
@@ -462,7 +460,7 @@ void callBack_mwi(int state)
 
         case MSP_ATTITUDE:
             // Send attitude
-            mavlink_msg_attitude_pack(mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime, deg2radian(mwiState->angx), -deg2radian(mwiState->angy), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy), deg2radian(mwiState->gz));
+            mavlink_msg_attitude_pack(mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(mwiState->angx), -deg2radian(mwiState->angy), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy), deg2radian(mwiState->gz));
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
             break;
