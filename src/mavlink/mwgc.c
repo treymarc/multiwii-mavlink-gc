@@ -32,11 +32,22 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-#define BUFFER_LENGTH 2041 // minimum buffer size that can be used with qnx (I don't know why)
+// mavlink message headers
+#define  MAVLINK_EXTERNAL_RX_BUFFER 0
+#include "message/common/mavlink.h"
 
-// windows headers
+// udp & socket
+#include <netdb.h> // gethostbyname
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+#define closesocket(s) close(s)
+#define BUFFER_LENGTH 2048 // minimum buffer size that can be used with qnx (I don't know why)
+typedef int SOCKET;
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct sockaddr SOCKADDR;
+typedef struct in_addr IN_ADDR;
+
 #if defined( _WINDOZ )
-
 #include <winsock.h>
 #define SocketErrno (WSAGetLastError())
 #define bcopy(src,dest,len) memmove(dest,src,len)
@@ -47,70 +58,50 @@ typedef uint32_t socklen_t;
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <netdb.h> // gethostbyname
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#define closesocket(s) close(s)
-typedef int SOCKET;
-typedef struct sockaddr_in SOCKADDR_IN;
-typedef struct sockaddr SOCKADDR;
-typedef struct in_addr IN_ADDR;
-
 #endif
 
+// mwi lib
 #include "../mwi/mwi.h"
 #include "../include/utils.h"
 
+// prog lib
 #include "man.h"
-/*
- * math
- */
+
 #define PI 3.1415926535897932384626433832795
 #define deg2radian(X) (PI * X) / 180
 
-// mavlink message headers
-#define  MAVLINK_EXTERNAL_RX_BUFFER 0
-#include "message/common/mavlink.h"
-
-// handle incoming udp mavlink msg
-void handleMessage(mavlink_message_t* currentMsg);
-
-void callBack_mwi(int state);
-
-//default value
-#define DEFAULT_UAVID 1
+// Options & default values
+short mwiUavID=1;
 #define DEFAULT_IP_GS "127.0.0.1"
 #define DEFAULT_SERIAL_DEV "/dev/ttyO2"
-
-mwi_uav_state_t *mwiState;
-int identSended = NOK;
-
-// global : serialPort, socket , uavId, groundstation
-HANDLE serialLink = 0;
 int autoTelemtry = 0;
 int baudrate = SERIAL_115200_BAUDRATE;
 uint32_t hertz = 30;
-SOCKET sock;
-short mwiUavID;
-int len = 0;
-uint8_t buf[BUFFER_LENGTH];
-mavlink_message_t msg;
 
-SOCKADDR_IN groundStationAddr;
+
+void handleMessage(mavlink_message_t* currentMsg);  // handle incoming udp mavlink msg
+void callBack_mwi(int state);                       // handle incoming msp event
+
+HANDLE serialLink = 0;                              // serial link
+uint8_t buf[BUFFER_LENGTH];                         // serial buffer size
+mwi_uav_state_t *mwiState;                          // serial mwi state
+mavlink_message_t msg;                              // mavlink message
+SOCKET sock;                                        // udp socket
+SOCKADDR_IN groundStationAddr;                      // ground station
 int sizeGroundStationAddr = sizeof groundStationAddr;
+
 
 int main(int argc, char* argv[])
 {
-    memset(&groundStationAddr, 0, sizeGroundStationAddr);
 #if defined( _WINDOZ )
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2,0), &WSAData);
 #endif
 
+    memset(&groundStationAddr, 0, sizeGroundStationAddr);
     char targetIp[150];
     char serialDevice[150];
 
-    mwiUavID = DEFAULT_UAVID;
     strcpy(serialDevice, DEFAULT_SERIAL_DEV);
     strcpy(targetIp, DEFAULT_IP_GS);
 
@@ -225,7 +216,7 @@ int main(int argc, char* argv[])
 
         if (!autoTelemtry && ((currentTime - lastFrameRequest) > (1000 * (1000 / hertz)))) {
             lastFrameRequest = currentTime;
-            if (identSended == OK) {
+            if (mwiState->init == OK) {
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
                     // ~ 2hz
                     lastHeartBeat = currentTime;
@@ -300,7 +291,7 @@ void callBack_mwi(int state)
 
     uint64_t currentTime = microsSinceEpoch();
     int i;
-
+    int len = 0;
     int gps = 0;
     int armed = 0;
     int stabilize = 0;
@@ -381,26 +372,22 @@ void callBack_mwi(int state)
 
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
-            identSended = OK;
+            mwiState->init = OK;
 
             break;
 
         case MSP_STATUS:
             // Send Status
 
-            sensors |= MAV_SYS_STATUS_SENSOR_3D_MAG; // compass present
-
+            sensors |= MAV_SYS_STATUS_SENSOR_3D_MAG;
             sensors |= MAV_SYS_STATUS_SENSOR_GPS;
-
             sensors |= MAV_SYS_STATUS_SENSOR_RC_RECEIVER;
 
             // all present sensors enabled by default except altitude and position control which we will set individually
             sensors = sensors & (~MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL & ~MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL);
 
-            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, sensors, sensors, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
-//             mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
+            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, sensors, sensors, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2],mwiState->debug[3]);
 
-                    mwiState->debug[2], mwiState->debug[3]);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
@@ -517,6 +504,7 @@ void callBack_mwi(int state)
 // gc -> fc
 void handleMessage(mavlink_message_t* currentMsg)
 {
+    int len = 0;
     switch (currentMsg->msgid) {
 
         case MAVLINK_MSG_ID_REQUEST_DATA_STREAM: {
@@ -582,22 +570,22 @@ void handleMessage(mavlink_message_t* currentMsg)
             int32_t i, p = 1;
             char name[8] = "PID_ _";
 
-            for (i = 0; i < PIDITEMS; i++) {
+            for (i = 0; i < MWI_PIDITEMS; i++) {
                 name[4] = i + '0';
                 name[6] = 'P';
-                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteP[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
+                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteP[i], MAVLINK_TYPE_FLOAT, MWI_VALUESCOUNT, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
                 name[4] = i + '0';
                 name[6] = 'I';
-                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteI[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
+                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteI[i], MAVLINK_TYPE_FLOAT, MWI_VALUESCOUNT, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
 
                 name[4] = i + '0';
                 name[6] = 'D';
-                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteD[i], MAVLINK_TYPE_FLOAT, 3 * PIDITEMS, p++);
+                mavlink_msg_param_value_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, name, (int32_t)mwiState->byteD[i], MAVLINK_TYPE_FLOAT, MWI_VALUESCOUNT, p++);
                 len = (char)mavlink_msg_to_send_buffer(buf, &msg);
                 sendto(sock, (const char *)buf, len, 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
             }

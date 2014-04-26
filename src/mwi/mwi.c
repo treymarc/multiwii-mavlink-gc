@@ -44,7 +44,7 @@ int16_t read16(void);
 int8_t read8(void);
 
 void save(int aByte);
-void setState(int aState);
+//void setState(int aState);
 
 void decode(mwi_uav_state_t *mwiState);
 
@@ -115,11 +115,6 @@ void save(int aByte)
     }
 }
 
-void setState(int aState)
-{
-    stateMSP = aState;
-}
-
 int read32(void)
 {
     int32_t t = frame[readindex++] & MASK;
@@ -127,7 +122,6 @@ int read32(void)
     t += (frame[readindex++] & MASK) << 16;
     t += (frame[readindex++] & MASK) << 24;
     return t;
-
 }
 
 int16_t read16(void)
@@ -270,7 +264,7 @@ void decode(mwi_uav_state_t *mwiState)
 
         case MSP_PID:
             MW_TRACE("MSP_PID\n")
-            for (i = 0; i < PIDITEMS; i++) {
+            for (i = 0; i < MWI_PIDITEMS; i++) {
                 mwiState->byteP[i] = read8();
                 mwiState->byteI[i] = read8();
                 mwiState->byteD[i] = read8();
@@ -291,7 +285,7 @@ void decode(mwi_uav_state_t *mwiState)
 
         case MSP_DEBUG:
             MW_TRACE("MSP_DEBUG\n")
-            for (i = 0; i < DEBUGITEMS; i++) {
+            for (i = 0; i < MWI_DEBUGITEMS; i++) {
                 mwiState->debug[i] = read16();
             }
             break;
@@ -357,27 +351,27 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
 
             case IDLE:
                 if (readbuffer[0] == MSP_HEAD1) {
-                    setState(HEADER_START);
+                    stateMSP = HEADER_START;
                 } else {
-                    setState(IDLE);
+                    stateMSP = (IDLE);
                     //	mwiState->serialErrorsCount=1+mwiState->serialErrorsCount;
                 }
                 break;
 
             case HEADER_START:
                 if (readbuffer[0] == MSP_HEAD2) {
-                    setState(HEADER_M);
+                    stateMSP = (HEADER_M);
                 } else {
-                    setState(IDLE);
+                    stateMSP = (IDLE);
                     //mwiState->serialErrorsCount=1+mwiState->serialErrorsCount;
                 }
                 break;
 
             case HEADER_M:
                 if (readbuffer[0] == MSP_TO_FC) {
-                    setState(HEADER_ARROW);
+                    stateMSP = (HEADER_ARROW);
                 } else {
-                    setState(IDLE);
+                    stateMSP = IDLE;
                     //	mwiState->serialErrorsCount=1+mwiState->serialErrorsCount;
                 }
                 break;
@@ -391,14 +385,14 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                 writeindex = 0;
                 checksum = readbuffer[0]; // same as: checksum = 0, checksum ^= input[0];
                 // the command is to follow
-                setState(HEADER_SIZE);
+                stateMSP = (HEADER_SIZE);
                 break;
 
             case HEADER_SIZE: // got size, expect cmd now
                 checksum ^= readbuffer[0];
                 // pass the command byte to the ByteBuffer handler also
                 save(readbuffer[0]);
-                setState(HEADER_CMD);
+                stateMSP = (HEADER_CMD);
 
                 cmd = readbuffer[0];
                 break;
@@ -411,7 +405,7 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
                     // stay in this state
                 } else {
                     // done reading, reset the decoder for next byte
-                    setState(IDLE);
+                    stateMSP = (IDLE);
                     if ((checksum & MASK) != readbuffer[0]) {
                         //MW_TRACE("msp checksum failed\n")
                         printf("msp checksum failed : cmd [%i]\n", (uint8_t)cmd);

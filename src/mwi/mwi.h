@@ -21,9 +21,9 @@
 #ifndef MWI_NS_H
 #define MWI_NS_H
 
-#define CHECKBOXITEMS 11
-#define PIDITEMS 10
-#define DEBUGITEMS 4
+#define MWI_CHECKBOXITEMS 11
+#define MWI_PIDITEMS 10
+#define MWI_DEBUGITEMS 4
 
 typedef struct {
     char payload[255];
@@ -37,7 +37,8 @@ typedef struct {
 } mwi_box_t;
 
 typedef struct mwi_uav_state_t {
-    mwi_box_t* box[32];
+	// mav rc model
+    mwi_box_t* box[32]; 
     int version, sensors, mode, profile, boxcount;
     int capability, mspVersion;
     int mot[8];
@@ -57,21 +58,22 @@ typedef struct mwi_uav_state_t {
     int pMeterSum, pAmp;
     int PowerTrigger;
     int vBat;
-
     int rssi;
 
     int rcThrottle, rcRoll, rcPitch, rcYaw, rcAUX1, rcAUX2, rcAUX3, rcAUX4;
 
-    int byteP[PIDITEMS], byteI[PIDITEMS], byteD[PIDITEMS];
+    int byteP[MWI_PIDITEMS], byteI[MWI_PIDITEMS], byteD[MWI_PIDITEMS];
     int byteRC_RATE, byteRC_EXPO, byteRollPitchRate, byteRC_thrMid, byteRC_thrExpo, byteYawRate, byteDynThrPID;
 
-    int activation1[CHECKBOXITEMS], activation2[CHECKBOXITEMS];
+    int activation1[MWI_CHECKBOXITEMS], activation2[MWI_CHECKBOXITEMS];
 
+	// ground station 
     int serialErrorsCount;
-
+    int init;
     void (*callback)(int);
 } mwi_uav_state_t;
 
+#define   MWI_VALUESCOUNT (3 * MWI_PIDITEMS)
 #define   MWI_FULLFRAME_SIZE 64
 
 #define   MSP_PRIVATE                1
