@@ -49,3 +49,9 @@ Windows
 Linux
 -------------
 	"mwgc -s /dev/ttyUSB1 -ip 127.0.0.1"
+	
+
+You can set the serial port option by hand :
+
+    "stty -F /dev/ttyUSB0  cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts "
+     

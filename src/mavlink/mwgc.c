@@ -33,10 +33,7 @@
 #include <fcntl.h>
 
 #define BUFFER_LENGTH 2041 // minimum buffer size that can be used with qnx (I don't know why)
-#if (defined __QNX__) | (defined __QNXNTO__)
-// QNX specific headers
-#include <unix.h>
-#else
+
 
 // windows headers
 #if defined( _WINDOZ )
@@ -60,13 +57,13 @@ typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 
-#endif
 
 #endif
 
 #include "../mwi/mwi.h"
 #include "../include/utils.h"
 
+#include "man.h"
 /*
  * math
  */
@@ -76,11 +73,6 @@ typedef struct in_addr IN_ADDR;
 // mavlink message headers
 #define  MAVLINK_EXTERNAL_RX_BUFFER 0
 #include "message/common/mavlink.h"
-
-void eexit(int code);
-void rtfmHelp(void);
-void rtfmArgvErr(char* argv);
-void rtfmVersion(void);
 
 // handle incoming udp mavlink msg
 void handleMessage(mavlink_message_t* currentMsg);
@@ -124,8 +116,6 @@ int main(int argc, char* argv[])
     strcpy(serialDevice, DEFAULT_SERIAL_DEV);
     strcpy(targetIp, DEFAULT_IP_GS);
 
-    //	TODO set serialBaudRate for slow serial link;
-
     uint8_t udpInBuf[BUFFER_LENGTH];
     struct sockaddr_in locAddr;
 
@@ -135,11 +125,13 @@ int main(int argc, char* argv[])
     // Check if --help flag was used
     if ((argc == 2) && (strcmp(argv[1], "--help") == 0)) {
         rtfmHelp();
+        eexit(EXIT_SUCCESS);
     }
 
     // Check if --version flag was used
     if ((argc == 2) && (strcmp(argv[1], "--version") == 0)) {
-        rtfmVersion();
+        rtfmVersion(MWGC_VERSION);
+        eexit(EXIT_SUCCESS);
     }
 
     // parse other flag
@@ -316,7 +308,8 @@ void callBack_mwi(int state)
     int stabilize = 0;
     int mavState = MAV_MODE_MANUAL_DISARMED;
     int uavtype = MAV_TYPE_GENERIC;
-
+#define MAVLINK_SENSOR_PRESENT_DEFAULT (MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE | MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL | MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION | MAV_SYS_STATUS_SENSOR_YAW_POSITION | MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL | MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL | MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS)
+    uint32_t sensors = MAVLINK_SENSOR_PRESENT_DEFAULT;
     switch (state) {
         case MSP_IDENT:
 
@@ -396,8 +389,17 @@ void callBack_mwi(int state)
 
         case MSP_STATUS:
             // Send Status
-            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_3D_MAG, MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_3D_MAG, 0,
-                    (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
+
+            sensors |= MAV_SYS_STATUS_SENSOR_3D_MAG; // compass present
+
+            sensors |= MAV_SYS_STATUS_SENSOR_GPS;
+
+            sensors |= MAV_SYS_STATUS_SENSOR_RC_RECEIVER;
+
+            // all present sensors enabled by default except altitude and position control which we will set individually
+            sensors = sensors & (~MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL & ~MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL);
+
+            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, sensors, sensors, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
 //             mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, mwiState->sensors, mwiState->mode, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1],
 
                     mwiState->debug[2], mwiState->debug[3]);
@@ -675,45 +677,3 @@ void eexit(int code)
     exit(code);
 }
 
-void rtfmVersion(void)
-{
-    printf("\n\nVersion: ");
-    printf(MWGC_VERSION);
-    printf("\n\n");
-    eexit(EXIT_SUCCESS);
-}
-
-void rtfmHelp(void)
-{
-    printf("\n\nmwgc - serial 2 udp");
-    printf("\n");
-    printf("\nUsage:\n\n");
-
-    printf("\t -ip <ip address of QGroundControl>\n");
-    printf("\t  default value : 127.0.0.1\n\n");
-    printf("\t -s <serial device name>\n");
-    printf("\t  default value : /dev/ttyO2\n\n");
-    printf("\t -baudrate <spedd\n");
-    printf("\t  default value : 115200\n\n");
-    printf("\t -id <id for mavlink>\n");
-    printf("\t  default value : 1\n\n");
-    printf("\t  -telemetryauto <int>\n");
-    printf("\t   1 : assume the flight controler will send data\n");
-    printf("\t   0 : send request for each data (default)\n\n");
-    printf("\t  -hertz <int>\n");
-    printf("\t   Serial refresh for the imu. Default is 30, max is 60\n\n");
-    printf("\t--help");
-    printf("\t  display this message\n\n");
-    printf("\t --version");
-    printf("\t  show version number\n\n");
-
-    eexit(EXIT_SUCCESS);
-}
-
-void rtfmArgvErr(char* argv)
-{
-    printf("\n");
-    printf("\nInvalides arguments : %s\n", argv);
-    printf("\n\nUsages : mwgc --help");
-    printf("\n\n");
-}

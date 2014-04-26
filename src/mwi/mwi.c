@@ -427,18 +427,7 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
 
 }
 
-/* QNX timer version */
-#if (defined __QNX__) || (defined __QNXNTO__)
-uint64_t microsSinceEpoch(void) {
-    struct timespec time;
-    uint64_t micros = 0;
 
-    clock_gettime(CLOCK_REALTIME, &time);
-    micros = (uint64_t)time.tv_sec * 100000 + time.tv_nsec/1000;
-
-    return micros;
-}
-#else
 uint64_t microsSinceEpoch(void)
 {
     struct timeval tv;
@@ -449,4 +438,4 @@ uint64_t microsSinceEpoch(void)
 
     return micros;
 }
-#endif
+

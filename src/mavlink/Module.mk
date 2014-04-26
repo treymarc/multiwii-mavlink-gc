@@ -19,7 +19,7 @@ ifeq ($(WINBUILD),true)
 	WINOP := -lws2_32 
 endif
 
-$(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o  $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o
+$(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o  $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o $(MAVLINK_SRC_DIR)$(PATH_SEP)man.o
 	$(CC) $(MAVLINK_SRC_CFLAGS) $(LDFLAGS) -o $@ $^ $(WINOP)
 
 
@@ -29,6 +29,8 @@ $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o  $(SERIAL
 $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.o: $(MAVLINK_SRC_DIR)$(PATH_SEP)mwgc.c  
 	$(CC)  $(MAVLINK_SRC_CFLAGS) $(CFLAGS) $(MAVLINK_SRC_CFLAGS) -c $< -o $@
 
+$(MAVLINK_SRC_DIR)$(PATH_SEP)man.o: $(MAVLINK_SRC_DIR)$(PATH_SEP)man.c  
+	$(CC)  $(MAVLINK_SRC_CFLAGS) $(CFLAGS) $(MAVLINK_SRC_CFLAGS) -c $< -o $@
 #
 #
 # Commands
