@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     }
 
     // mwi state
-    mwi_uav_state_t *mwiState;
+    mwi_mav_t *mwiState;
     mwiState = calloc(sizeof(*mwiState), sizeof(*mwiState));
     mwiState->callback = &callBack_mwi;
 

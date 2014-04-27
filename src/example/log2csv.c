@@ -26,7 +26,7 @@
 
 HANDLE serialLink = NOK;
 int initOk = NOK;
-mwi_uav_state_t *mwiState;
+mwi_mav_t *mwiState;
 uint64_t currentTime;
 
 void callBack_mwi(int state);

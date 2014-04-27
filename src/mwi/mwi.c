@@ -46,7 +46,7 @@ int8_t read8(void);
 void save(int aByte);
 //void setState(int aState);
 
-void decode(mwi_uav_state_t *mwiState);
+void decode(mwi_mav_t *mwiState);
 
 int MWIserialbuffer_Payloadwrite8(msp_payload_t *payload, int value)
 {
@@ -136,7 +136,7 @@ int8_t read8(void)
     return (frame[readindex++] & MASK);
 }
 
-void decode(mwi_uav_state_t *mwiState)
+void decode(mwi_mav_t *mwiState)
 {
     //MW_TRACE("decoded");
     readindex = 0;
@@ -310,7 +310,7 @@ void decode(mwi_uav_state_t *mwiState)
 
                 strcpy(mwiState->box[mwiState->boxcount]->name, boxname);
 
-                MW_TRACE(boxname)MW_TRACE("\n")
+                //MW_TRACE(boxname)MW_TRACE("\n")
                 mwiState->boxcount += 1;
                 boxname = strtok(NULL, ";");
             }
@@ -335,7 +335,7 @@ void decode(mwi_uav_state_t *mwiState)
     mwiState->callback(recievedCmd);
 }
 
-void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState)
+void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState)
 {
     uint8_t readbuffer[1]; //
     uint8_t checksum = 0; //

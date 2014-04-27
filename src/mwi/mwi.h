@@ -37,7 +37,7 @@ typedef struct {
     int state;
 } mwi_box_t;
 
-typedef struct mwi_uav_state_t {
+typedef struct mwi_mav_t {
 	// mav rc model
     mwi_box_t* box[32]; 
     int version, sensors, mode, profile, boxcount;
@@ -72,7 +72,7 @@ typedef struct mwi_uav_state_t {
     int serialErrorsCount;
     int init;
     void (*callback)(int);
-} mwi_uav_state_t;
+} mwi_mav_t;
 
 #define   MWI_FULLFRAME_SIZE 64
 
@@ -137,7 +137,7 @@ typedef struct mwi_uav_state_t {
 // serial impl mwi.c
 // mwi binary protocol
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, msp_payload_t *payload);
-void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_uav_state_t *mwiState);
+void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState);
 HANDLE MWIserialbuffer_init(const char* serialport, int baudrate);
 uint64_t microsSinceEpoch(void);
 

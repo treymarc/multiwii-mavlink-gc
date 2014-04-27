@@ -1,6 +1,6 @@
 
 
-VERBOSE :=3
+VERBOSE := 2
 
 ifdef ComSpec
 WINBUILD := true

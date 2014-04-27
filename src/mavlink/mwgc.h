@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright (C) 2012  Trey Marc ( a t ) gmail.com
+ Copyright (C) 2014  Trey Marc ( a t ) gmail.com
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -13,53 +13,15 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
  ****************************************************************************/
-#ifndef MWI_UTILS_H
-#define MWI_UTILS_H
 
-/*
- * build specific
- */
-#if defined( _WINDOZ )
-#include <Windows.h>
-#else
-typedef unsigned short HANDLE;
-#endif
+typedef struct {
 
-/*
- * version
- */
-#define MWGC_VERSION "SNAPSHOT-2014.04.23"
+    int sendRcData;
+    struct rcdata {
+        int x, y, z, r, buttons;
+        int toSend;
+    } rcdata;
 
-/*
- * logic
- */
-#define NOK 0
-#define OK 1
-#define TRUE OK
-#define FALSE NOK
-/*
- * log level
- */
-#if !defined(_LOGLEVEL)
-#define _LOGLEVEL 0
-#endif
+} mavlink_state_t;
 
-/*
- * log
- */
-#define MW_ERROR(x) printf(x);
-
-#if (_LOGLEVEL>2)
-#include <stdio.h>
-
-#define MW_INFO(x) printf(x);
-#define MW_TRACE(x) printf(x);
-#else
-#define MW_INFO(x);
-#define MW_TRACE(x);
-
-#endif
-
-#endif
