@@ -8,7 +8,7 @@ void rtfmVersion(const char * version)
 
 void rtfmHelp(void)
 {
-    printf("\n\Multiwii Mavlink groundControl\n");
+    printf("\nMultiwii Mavlink groundControl\n");
 
     printf("\nUsage:\n\n");
 

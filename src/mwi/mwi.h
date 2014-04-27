@@ -24,6 +24,7 @@
 #define MWI_CHECKBOXITEMS 11
 #define MWI_PIDITEMS 10
 #define MWI_DEBUGITEMS 4
+#define MWI_CHAN_COUNT 8
 
 typedef struct {
     char payload[255];
@@ -73,7 +74,6 @@ typedef struct mwi_uav_state_t {
     void (*callback)(int);
 } mwi_uav_state_t;
 
-#define   MWI_VALUESCOUNT (3 * MWI_PIDITEMS)
 #define   MWI_FULLFRAME_SIZE 64
 
 #define   MSP_PRIVATE                1
