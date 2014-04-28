@@ -38,8 +38,8 @@ typedef struct {
 } mwi_box_t;
 
 typedef struct mwi_mav_t {
-	// mav rc model
-    mwi_box_t* box[32]; 
+    // mav rc model
+    mwi_box_t* box[32];
     int version, sensors, mode, profile, boxcount;
     int capability, mspVersion;
     int mot[8];
@@ -68,7 +68,7 @@ typedef struct mwi_mav_t {
 
     int activation1[MWI_CHECKBOXITEMS], activation2[MWI_CHECKBOXITEMS];
 
-	// ground station 
+    // ground station 
     int serialErrorsCount;
     int init;
     void (*callback)(int);

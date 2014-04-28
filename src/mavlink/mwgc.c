@@ -1,5 +1,5 @@
 /*******************************************************************************
- derivative work from :
+ derivative work from the mavlink tutorial.
 
  Copyright (C) 2013  Trey Marc ( a t ) gmail.com
  Copyright (C) 2010  Bryan Godbolt godbolt ( a t ) ualberta.ca
@@ -37,12 +37,9 @@
 #include "message/common/mavlink.h"
 
 // udp & socket
-#include <netdb.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
-#define closesocket(s) close(s)
 #define BUFFER_LENGTH 2048
-typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
@@ -55,6 +52,9 @@ typedef uint32_t socklen_t;
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+typedef int SOCKET;
+#define closesocket(s) close(s)
 #endif
 
 // mwi lib
@@ -97,7 +97,6 @@ int main(int argc, char* argv[])
 
     memset(&groundStationAddr, 0, sizeGroundStationAddr);
 
-
     uint8_t udpInBuf[BUFFER_LENGTH];
     struct sockaddr_in locAddr;
 
@@ -121,7 +120,6 @@ int main(int argc, char* argv[])
     uint64_t lastHeartBeat = 0;
     uint64_t lastReaquestLowPriority = 0;
     uint64_t currentTime = microsSinceEpoch();
-
 
     if ((argc == 2) && (strcmp(argv[1], "--help") == 0)) {
         rtfmHelp();
@@ -176,7 +174,7 @@ int main(int argc, char* argv[])
     // Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol
     if (NOK != bind(sock, (struct sockaddr *)&locAddr, sizeof(struct sockaddr))) {
         perror("error bind to port 14551 failed");
-        eexit(EXIT_FAILURE);
+        eexit(serialLink);
     }
 
     // Attempt to make it non blocking
@@ -184,14 +182,14 @@ int main(int argc, char* argv[])
     u_long arg = 1;
     if(ioctlsocket(sock, FIONBIO, &arg )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
-        eexit(EXIT_FAILURE);
+        eexit(serialLink);
     }
 #define SOCKLEN_T_INT(fromlen) ((int*)fromlen)
 #else
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         close(sock);
-        eexit(EXIT_FAILURE);
+        eexit(serialLink);
     }
 #define SOCKLEN_T_INT(fromlen) fromlen
 #endif
@@ -204,12 +202,10 @@ int main(int argc, char* argv[])
 
     if (serialLink == NOK) {
         perror("error opening serial port");
-        eexit(EXIT_FAILURE);
+        eexit(serialLink);
     }
 
-
     MW_TRACE("starting..\n")
-
 
     if (mavlinkState->sendRcData) {
         mavlink_msg_heartbeat_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, MAV_TYPE_GENERIC, MAV_AUTOPILOT_GENERIC, MAV_MODE_STABILIZE_ARMED, 0, MAV_STATE_STANDBY);
@@ -772,7 +768,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 
 }
 
-void eexit(int serialLink)
+void eexit(HANDLE serialLink)
 {
 
 #if defined( _WINDOZ)

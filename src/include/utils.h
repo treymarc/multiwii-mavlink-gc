@@ -37,8 +37,10 @@ typedef unsigned short HANDLE;
  */
 #define NOK 0
 #define OK 1
+#if !defined( _WINDOZ )
 #define TRUE OK
 #define FALSE NOK
+#endif
 /*
  * log level
  */
