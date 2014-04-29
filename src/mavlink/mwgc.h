@@ -17,7 +17,7 @@
 
 typedef struct {
 
-    int sendRcData;
+    int calibrating, sendRcData;
     struct rcdata {
         int x, y, z, r, buttons;
         int toSend;
