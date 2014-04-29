@@ -402,7 +402,7 @@ void callBack_mwi(int state)
             // all present sensors enabled by default except altitude and position control which we will set individually
             sensors = sensors & (~MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL & ~MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL);
 
-            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, sensors, sensors, 0, (mwiState->cycleTime / 10), mwiState->vBat * 1000, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2],
+            mavlink_msg_sys_status_pack(mwiUavID, MAV_COMP_ID_ALL, &msg, sensors, sensors, 0, (mwiState->cycleTime / 10), mwiState->vBat * 100, mwiState->pAmp, mwiState->pMeterSum, mwiState->rssi, mwiState->i2cError, mwiState->debug[0], mwiState->debug[1], mwiState->debug[2],
                     mwiState->debug[3]);
 
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
