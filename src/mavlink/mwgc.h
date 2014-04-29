@@ -14,14 +14,26 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+#ifndef _MWGCH_H_
+#define _MWGCH_H_
 
 typedef struct {
 
-    int calibrating, sendRcData;
+    char targetIp[150];
+    char serialDevice[150];
+    int baudrate;
+    uint32_t hertz;
+
+    int autoTelemtry, calibrating, sendRcData;
     struct rcdata {
         int x, y, z, r, buttons;
         int toSend;
     } rcdata;
 
+    int mwiUavID;
+    int mwiAutoPilotType;
+    int mwiFlightMode;
+    int mwiAirFrametype;
 } mavlink_state_t;
 
+#endif
