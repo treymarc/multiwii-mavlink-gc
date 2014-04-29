@@ -1,35 +1,56 @@
 
-
-VERBOSE := 2
-
-ifdef ComSpec
-WINBUILD := true
-else
-WINBUILD := false
-endif
-
+#--------------------
+# User Options
 #--------------------
 
-ifeq ($(WINBUILD),true)
-DWIN := -D_WINDOZ
-RM := erase
-PATH_SEP := \\
-EXE_SUFIX := .exe
+VERSION= 1.0
+VERBOSE = 2
+
+
+#--------------------
+# Platform options
+#--------------------
+
+ifdef ComSpec
+WINBUILD = true
+DWIN = -D_WINDOZ
+RM = erase
+PATH_SEP = \\
+EXE_SUFIX = .exe
+#BUILDDATE = $(shell (DATE /T yymmdd))
 else
-RM := rm -r
-PATH_SEP := /
+WINBUILD= false
+RM = rm -r
+PATH_SEP = /
+#BUILDDATE = $(shell (date +'%Y%m%d'))
 endif
+
+
+#MWGC_VERSION = $(VERSION)-$(BUILDDATE)
+MWGC_VERSION = $(VERSION)
+
+
+#--------------------
+#  Compiler options
+#--------------------
+
 
 CC	?= gcc
 
-CFLAGS	:= -std=c99 -pedantic -g -O3 
+CFLAGS	= -std=c99 -pedantic -g -O3 
 
 CFLAGS_MAVLINK = -DMAVLINK_EXTERNAL_RX_STATUS=0 -DMAVLINK_CHECK_MESSAGE_LENGTH=0
 
-CFLAGS	+= $(DWIN) -D_LOGLEVEL=$(VERBOSE) $(CFLAGS_MAVLINK) -D_GNU_SOURCE  -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
+CFLAGS_MWGC = -D_LOGLEVEL=$(VERBOSE) -D_MWGC_VERSION=\"$(MWGC_VERSION)\"
+
+CFLAGS	+= $(DWIN) $(CFLAGS_MAVLINK) $(CFLAGS_MWGC) -D_GNU_SOURCE  -Wall -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
 		   -Wcast-align -Wwrite-strings -Wnested-externs -Winline \
 		   -W -Wundef -Wmissing-prototypes 
 
+
+#--------------------
+# Build modules
+#--------------------
 
 .PHONY: all clean 
 

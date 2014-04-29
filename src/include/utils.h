@@ -27,10 +27,11 @@
 typedef unsigned short HANDLE;
 #endif
 
-/*
- * version
- */
-#define MWGC_VERSION "SNAPSHOT-2014.04.23"
+#if !defined(_MWGC_VERSION )
+#define MWGC_VERSION "DEV"
+#else
+#define MWGC_VERSION _MWGC_VERSION
+#endif
 
 /*
  * logic
@@ -41,6 +42,7 @@ typedef unsigned short HANDLE;
 #define TRUE OK
 #define FALSE NOK
 #endif
+
 /*
  * log level
  */
@@ -48,9 +50,6 @@ typedef unsigned short HANDLE;
 #define _LOGLEVEL 0
 #endif
 
-/*
- * log
- */
 #define MW_ERROR(x) printf(x);
 
 #if (_LOGLEVEL>2)

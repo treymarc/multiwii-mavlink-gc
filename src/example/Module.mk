@@ -1,5 +1,5 @@
 #
-# example UART 2 UDP 
+# MUltiwii serial protocol example  
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
 
 EXAMPLE_SRC_DIR	:= src$(PATH_SEP)example
 EXAMPLE_SRC_CFLAGS	:=  
-EXAMPLE_SRC_TARGETS	:=  example log2csv gps
+EXAMPLE_SRC_TARGETS	:= example log2csv gps
 
 
 $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps: $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.o $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o
