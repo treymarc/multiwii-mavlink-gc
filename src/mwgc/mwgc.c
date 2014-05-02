@@ -22,18 +22,17 @@
  -2014.04.25 : send pid values to groundstation
 
  ****************************************************************************/
+#include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
+#include <unistd.h>
 #include <string.h>
 
+#include <errno.h>
 #include <sys/types.h>
-
-#include <unistd.h>
-#include <stdlib.h>
 #include <fcntl.h>
 
 // mavlink message headers
-#include "message/common/mavlink.h"
+#include "../mavlink/common/mavlink.h"
 
 // udp & socket
 #define INVALID_SOCKET -1
@@ -57,12 +56,13 @@ typedef int SOCKET;
 #endif
 
 // mwi lib
+#include "../utils/utils.h"
 #include "../mwi/mwi.h"
-#include "../include/utils.h"
+
 
 // this header
-#include "conf.h"
 #include "mwgc.h"
+
 
 #define PI 3.1415926535897932384626433832795
 #define deg2radian(X) (PI * X) / 180
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 
         currentTime = microsSinceEpoch();
 
-        if (!mavlinkState->autoTelemtry && ((currentTime - lastFrameRequest) > (1000 * (1000 / mavlinkState->hertz)))) {
+        if (!mavlinkState->autoTelemtry && ((currentTime - lastFrameRequest) > (1000 * (1000 / (uint32_t)(mavlinkState->hertz))))) {
             lastFrameRequest = currentTime;
             if (mwiState->init == OK) {
                 if ((currentTime - lastHeartBeat) > 1000 * 500) {
@@ -213,8 +213,8 @@ int main(int argc, char* argv[])
             //MSP_BAT
 
             //
-            if (mavlinkState->rcdata.toSend == TRUE) {
-                mavlinkState->rcdata.toSend = FALSE;
+            if (mavlinkState->rcdata.toSend == OK) {
+                mavlinkState->rcdata.toSend = NOK;
                 payload->length = 0;
                 MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.y);
                 MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.x);
@@ -248,6 +248,12 @@ int main(int argc, char* argv[])
                 }
             }
         }
+
+        mavlink_msg_data_transmission_handshake_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, MAVLINK_DATA_STREAM_IMG_RAW8U, (253 * 253), 253, 253, 253, 253, 100);
+        sendto(sock, (const char *)buf, (char)mavlink_msg_to_send_buffer(buf, &msg), 0, (struct sockaddr*)&groundStationAddr, sizeGroundStationAddr);
+
+
+
 
         // no need to rush
         usleep(1);
@@ -318,7 +324,7 @@ void callBack_mwi(int state)
                 }
             }
 
-            armed = TRUE;
+            armed = OK;
 
             if (gps && armed && stabilize)
 
@@ -632,7 +638,7 @@ void handleMessage(mavlink_message_t* currentMsg)
                 mavlinkState->rcdata.z = 1500 + packet.z / 2;
                 mavlinkState->rcdata.r = 1500 + packet.r / 2;
                 mavlinkState->rcdata.buttons = packet.buttons;
-                mavlinkState->rcdata.toSend = TRUE;
+                mavlinkState->rcdata.toSend = OK;
             }
             break;
 

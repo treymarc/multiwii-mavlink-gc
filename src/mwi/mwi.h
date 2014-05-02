@@ -15,11 +15,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
-#include <stdint.h>
-#include "../serial/serial.h"
-
 #ifndef MWI_NS_H
 #define MWI_NS_H
+
+#include "../utils/utils.h"
+#include "../serial/serial.h"
 
 #define MWI_CHECKBOXITEMS 11
 #define MWI_PIDITEMS 10
@@ -139,7 +139,6 @@ typedef struct mwi_mav_t {
 int MWIserialbuffer_askForFrame(HANDLE serialPort, uint8_t MSP_ID, msp_payload_t *payload);
 void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState);
 HANDLE MWIserialbuffer_init(const char* serialport, int baudrate);
-uint64_t microsSinceEpoch(void);
 
 int MWIserialbuffer_Payloadwrite8(msp_payload_t *payload, int value);
 int MWIserialbuffer_Payloadwrite16(msp_payload_t *payload, int value);

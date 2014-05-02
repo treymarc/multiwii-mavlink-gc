@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright (C) 2012  Trey Marc ( a t ) gmail.com
+ Copyright (C) 2014  Trey Marc ( a t ) gmail.com
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -13,54 +13,39 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
  ****************************************************************************/
-#ifndef MWI_UTILS_H
-#define MWI_UTILS_H
 
-/*
- * build specific
- */
-#if defined( _WINDOZ )
-#include <Windows.h>
-#else
-typedef unsigned short HANDLE;
-#endif
+typedef struct {
 
-#if !defined(_MWGC_VERSION )
-#define MWGC_VERSION "DEV"
-#else
-#define MWGC_VERSION _MWGC_VERSION
-#endif
+    char targetIp[150];
+    char serialDevice[150];
+    int baudrate;
+    int hertz;
 
-/*
- * logic
- */
-#define NOK 0
-#define OK 1
-#if !defined( _WINDOZ )
-#define TRUE OK
-#define FALSE NOK
-#endif
+    int autoTelemtry, calibrating, sendRcData;
+    struct rcdata {
+        int x, y, z, r, buttons;
+        int toSend;
+    } rcdata;
 
-/*
- * log level
- */
-#if !defined(_LOGLEVEL)
-#define _LOGLEVEL 0
-#endif
+    int mwiUavID;
+    int mwiAutoPilotType;
+    int mwiFlightMode;
+    int mwiAirFrametype;
+} mavlink_state_t;
 
-#define MW_ERROR(x) printf(x);
 
-#if (_LOGLEVEL>2)
 #include <stdio.h>
+#include <stdint.h>
+#include "../utils/utils.h"
+// mavlink message headers
+#include "../mavlink/common/mavlink.h"
 
-#define MW_INFO(x) printf(x);
-#define MW_TRACE(x) printf(x);
-#else
-#define MW_INFO(x);
-#define MW_TRACE(x);
 
-#endif
+#define TYPE_PX4 -1
 
-#endif
+void eexit(HANDLE code);
+void rtfmHelp(void);
+void rtfmVersion(const char * version);
+int config(mavlink_state_t *mavlinkState,int argc, char* argv[]);
+

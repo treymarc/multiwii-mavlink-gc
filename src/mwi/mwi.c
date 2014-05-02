@@ -15,11 +15,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
-#include <sys/time.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../include/utils.h"
+#include "../serial/serial.h"
 #include "mwi.h"
 
 #define MASK  0xff
@@ -111,7 +111,7 @@ void save(int aByte)
     if (writeindex < BLENGTH) {
         frame[writeindex++] = aByte;
     } else {
-        MW_TRACE(" serial buffer overrun \n ")
+        MW_ERROR(" serial buffer overrun \n ")
     }
 }
 
@@ -421,18 +421,5 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState)
 
 }
 
-uint64_t microsSinceEpoch(void)
-{
-    struct timeval tv;
-    uint64_t micros = 0;
-    static uint64_t startMicrosTime = 0;
 
-    gettimeofday(&tv, NULL);
-    micros = ((uint64_t)tv.tv_sec) * 1000000 + tv.tv_usec;
-
-    if (startMicrosTime == 0) {
-        startMicrosTime = micros;
-    }
-    return micros - startMicrosTime;
-}
 

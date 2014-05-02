@@ -13,27 +13,25 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
  ****************************************************************************/
-#ifndef _MWGCH_H_
-#define _MWGCH_H_
+#include <sys/time.h>
+#include "utils.h"
 
-typedef struct {
 
-    char targetIp[150];
-    char serialDevice[150];
-    int baudrate;
-    uint32_t hertz;
+uint64_t microsSinceEpoch(void)
+{
+    static uint64_t uTimeStart = 0;
+    uint64_t uTime = 0;
 
-    int autoTelemtry, calibrating, sendRcData;
-    struct rcdata {
-        int x, y, z, r, buttons;
-        int toSend;
-    } rcdata;
+    struct timeval tv;
 
-    int mwiUavID;
-    int mwiAutoPilotType;
-    int mwiFlightMode;
-    int mwiAirFrametype;
-} mavlink_state_t;
+    gettimeofday(&tv, NULL);
+    uTime = ((uint64_t)tv.tv_sec) * 1000000 + tv.tv_usec;
 
-#endif
+    if (uTimeStart == 0) {
+        uTimeStart = uTime;
+    }
+    return uTime - uTimeStart;
+}
+

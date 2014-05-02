@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "../include/utils.h"
+#include "../utils/utils.h"
 #include "../mwi/mwi.h"
 
 HANDLE serialLink = NOK;

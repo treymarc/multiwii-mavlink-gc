@@ -15,24 +15,56 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  ****************************************************************************/
+#ifndef MWI_UTILS_H
+#define MWI_UTILS_H
 
-#ifndef _MWGCH_H_
-#define _MWGCH_H_
+#include <stdint.h>
 
-#include "../utils/utils.h"
+/*
+ * build specific
+ */
+#if defined( _WINDOZ )
+#include <Windows.h>
+#else
+typedef unsigned short HANDLE;
+#endif
 
-#define SERIAL_115200_BAUDRATE  115200
-#define SERIAL_57600_BAUDRATE   57600
-#define SERIAL_38400_BAUDRATE   38400
-#define SERIAL_19200_BAUDRATE   19200
-#define SERIAL_9600_BAUDRATE    9600
+#if !defined(_MWGC_VERSION )
+#define MWGC_VERSION "DEV"
+#else
+#define MWGC_VERSION _MWGC_VERSION
+#endif
 
-HANDLE serialport_init(const char* serialport, int i);
+/*
+ * logic
+ */
+#define NOK 0
+#define OK 1
 
-int serialport_writeChar(HANDLE fd, char b);
-int serialport_write(HANDLE fd, char* str, int len);
+/*
+ * log level
+ */
 
-int serialport_readChar(HANDLE fd, char* buf);
-int serialport_readUntil(HANDLE fd, char* buf, char until);
+#define MW_ERROR(x) printf(x);
+
+#if !defined(_LOGLEVEL)
+#define _LOGLEVEL 0
+#endif
+
+
+#if (_LOGLEVEL>2)
+#include <stdio.h>
+#define MW_INFO(x) printf(x);
+#define MW_TRACE(x) printf(x);
+#else
+#define MW_INFO(x);
+#define MW_TRACE(x);
+#endif
+
+
+uint64_t microsSinceEpoch(void);
+
+
 
 #endif
+

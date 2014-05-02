@@ -4,7 +4,7 @@
 #--------------------
 
 VERSION= 1.0
-VERBOSE = 2
+VERBOSE = 3
 
 
 #--------------------
@@ -56,7 +56,7 @@ CFLAGS	+= $(DWIN) $(CFLAGS_MAVLINK) $(CFLAGS_MWGC) -D_GNU_SOURCE  -Wall -Wstrict
 
 all:
 
-EXTRA	:= src$(PATH_SEP)example src$(PATH_SEP)mavlink
-SRCDIRS	:= src$(PATH_SEP)serial src$(PATH_SEP)mwi $(EXTRA)
+EXTRA	:= src$(PATH_SEP)example src$(PATH_SEP)mwgc
+SRCDIRS	:= src$(PATH_SEP)utils src$(PATH_SEP)serial src$(PATH_SEP)mwi $(EXTRA)
 
 include $(SRCDIRS:%=%$(PATH_SEP)Module.mk)
