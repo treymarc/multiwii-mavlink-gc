@@ -39,7 +39,7 @@ typedef struct {
 #include <stdint.h>
 #include "../utils/utils.h"
 // mavlink message headers
-#include "../mavlink/common/mavlink.h"
+#include "common/mavlink.h"
 
 
 #define TYPE_PX4 -1

@@ -32,7 +32,7 @@
 #include <fcntl.h>
 
 // mavlink message headers
-#include "../mavlink/common/mavlink.h"
+#include "common/mavlink.h"
 
 // udp & socket
 #define INVALID_SOCKET -1
