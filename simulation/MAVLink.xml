@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<PropertyList>
+	<generic>
+	
+		<input>
+			<binary_mode>true</binary_mode>
+			<!-- /controls/flight [-1;1] -->
+			<chunk>
+				<name>aileron</name>
+				<type>double</type>
+				<node>/controls/flight/aileron</node>
+			</chunk>
+			<chunk>
+				<name>elevator</name>
+				<type>double</type>
+				<node>/controls/flight/elevator</node>
+			</chunk>
+			<chunk>
+				<name>rudder</name>
+				<type>double</type>
+				<node>/controls/flight/rudder</node>
+			</chunk>
+
+			<!-- /controls//engines [0;1] -->
+			<chunk>
+				<name>throttle1</name>
+				<type>double</type>
+				<node>/controls/engines/engine[0]/throttle</node>
+			</chunk>
+						<chunk>
+				<name>throttle2</name>
+				<type>double</type>
+				<node>/controls/engines/engine[1]/throttle</node>
+			</chunk>
+						<chunk>
+				<name>throttle3</name>
+				<type>double</type>
+				<node>/controls/engines/engine[2]/throttle</node>
+			</chunk>
+						<chunk>
+				<name>throttle4</name>
+				<type>double</type>
+				<node>/controls/engines/engine[3]/throttle</node>
+			</chunk>
+			
+		</input>
+		
+
+		<output>
+			<binary_mode>true</binary_mode>
+			<binary_footer>magic,0xa636a53d</binary_footer>
+			<!-- ##### GPS #####   (52.51519948) -->
+			<chunk>
+				<name>latitude</name> 
+				<type>double</type>
+				<node>/position/latitude-deg</node>
+			</chunk>
+			<chunk>
+				<name>longitude</name>
+				<type>double</type>
+				<node>/position/longitude-deg</node>
+			</chunk>
+			<chunk>
+				<name>altitude</name>
+				<type>double</type>
+				<node>/position/altitude-ft</node>
+			</chunk>
+			<chunk>
+				<name>groundspeed</name>
+				<type>double</type>
+				<node>/velocities/groundspeed-kt</node>
+			</chunk>
+			
+			<!-- #### orientation #### -->
+			<chunk>
+				<name>heading</name> [0;360])
+				<type>double</type>
+				<node>/orientation/heading-deg</node>
+			</chunk>
+
+			<!-- pitch and roll relative to the ground's level/horizontal in degree [-180;180]-->
+			<chunk>
+				<name>roll</name>
+				<type>double</type>
+				<node>/orientation/roll-deg</node>
+			</chunk>
+
+			<chunk>
+				<name>pitch</name>
+				<type>double</type>
+				<node>/orientation/pitch-deg</node>
+			</chunk>
+
+			<!-- ##### IMU ##### -->
+			<chunk>
+				<name>x-accel</name>
+				<type>double</type>
+				<node>/accelerations/pilot/x-accel-fps_sec</node>
+			</chunk>
+			<chunk> 
+				<name>y-accel</name>
+				<type>double</type>
+				<node>/accelerations/pilot/y-accel-fps_sec</node>
+			</chunk>
+			<chunk> 
+				<name>z-accel</name><!-- 1g = -32.15 -->
+				<type>double</type>
+				<node>/accelerations/pilot/z-accel-fps_sec</node>
+			</chunk>
+
+			<chunk>
+				<name>roll-rate</name>
+				<type>double</type>
+				<node>/orientation/roll-rate-degps</node>
+			</chunk>
+			<chunk>
+				<name>pitch-rate</name>
+				<type>double</type>
+				<node>/orientation/pitch-rate-degps</node>
+			</chunk>
+			<chunk>
+				<name>yaw-rate</name>
+				<type>double</type>
+				<node>/orientation/yaw-rate-degps</node>
+			</chunk>
+
+		</output>
+	</generic>
+</PropertyList>

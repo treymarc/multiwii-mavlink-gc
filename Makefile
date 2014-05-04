@@ -3,8 +3,8 @@
 # User Options
 #--------------------
 
-VERSION = 1.0
-VERBOSE = 3
+VERSION = 1.1
+VERBOSE = 2
 MAVLINK = 1.0
 
 #--------------------

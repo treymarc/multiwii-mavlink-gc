@@ -14,6 +14,12 @@ void rtfmHelp(void)
 
     printf("\nUsage:\n\n");
 
+    printf("\t -hil <int> , hardware in the loop simulation, default is 0\n");
+    printf("\t  1 : flight gear simulator\n");
+    printf("\t  0 : no simulation\n\n");
+    printf("\t -v <level>, verbose level default is 1\n");
+    printf("\t  1 : normal\n");
+    printf("\t  0 : quiet\n\n");
     printf("\t -ip <ip address of QGroundControl>\n");
     printf("\t  default value : 127.0.0.1\n\n");
     printf("\t -s <serial device name>\n");
@@ -45,7 +51,7 @@ int config(mavlink_state_t *mavlinkState, int argc, char* argv[])
         rtfmVersion(MWGC_VERSION);
         return NOK;
     } else {
-
+        mavlinkState->verbose = 1;
         // parse options flags
         for (int i = 1; i < argc; i++) {
             if (i + 1 != argc) {
@@ -77,13 +83,20 @@ int config(mavlink_state_t *mavlinkState, int argc, char* argv[])
                         mavlinkState->mwiAutoPilotType = TYPE_PX4;
                     }
                     i++;
+                } else if (strcmp(argv[i], "-v") == 0) {
+                    mavlinkState->verbose = atoi(argv[i + 1]);
+                    i++;
+                }else if (strcmp(argv[i], "-hil") == 0) {
+                    mavlinkState->hil = atoi(argv[i + 1]);
+                    i++;
                 }
             }
         }
     }
-
-    printf("ground station ip: %s\n", mavlinkState->targetIp);
-    printf("serial link: %s\n", mavlinkState->serialDevice);
-    printf("uav id: %i\n", mavlinkState->mwiUavID);
+    if (mavlinkState->verbose) {
+        printf("ground station ip: %s\n", mavlinkState->targetIp);
+        printf("serial link: %s\n", mavlinkState->serialDevice);
+        printf("uav id: %i\n", mavlinkState->mwiUavID);
+    }
     return OK;
 }

@@ -17,29 +17,35 @@
 
 typedef struct {
 
-    char targetIp[150];
-    char serialDevice[150];
+    // not related to the mav state
+    char targetIp[150];         // target ip , should be 127.0.0.1 , gs and fs must be the same
+    char serialDevice[150];     // serial device name
     int baudrate;
-    int hertz;
+    int hertz;                  // msp update
+    int verbose;                // verbose level , 0 = no output
+    int hil;                    // hardware in the loop simulation , need Flight simulator
 
-    int autoTelemtry, calibrating, sendRcData;
-    struct rcdata {
+
+    // related to the mav
+    int autoTelemtry, calibrating;
+
+    int sendRcData;             // true if the gs send rcdata
+    struct rcdata {             // mavlink rcdata
         int x, y, z, r, buttons;
         int toSend;
     } rcdata;
 
     int mwiUavID;
-    int mwiAutoPilotType;
-    int mwiFlightMode;
-    int mwiAirFrametype;
+    int mwiAutoPilotType;       // this is used to report as a px4 or generic in the config screen
+    int mwiFlightMode;          // the reported mavlink flight mode
+    int mwiAirFrametype;        // the reported mavlink airframe mode
 } mavlink_state_t;
 
 
 #include <stdio.h>
 #include <stdint.h>
 #include "../utils/utils.h"
-// mavlink message headers
-#include "common/mavlink.h"
+
 
 
 #define TYPE_PX4 -1

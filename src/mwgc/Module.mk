@@ -8,7 +8,7 @@
 # (at your option) any later version.
 
 MAVLINK_SRC_DIR	:= src$(PATH_SEP)mwgc
-MAVLINK_SRC_CFLAGS	:=
+MAVLINK_SRC_CFLAGS	:= -lm
 MAVLINK_SRC_OBJECT :=  	mwgc
 MAVLINK_SRC_TARGETS	:=  $(MAVLINK_SRC_OBJECT)-$(MWGC_VERSION)
 

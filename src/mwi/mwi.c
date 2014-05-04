@@ -330,6 +330,9 @@ void decode(mwi_mav_t *mwiState)
         case MSP_SET_RAW_GPS:
             MW_TRACE("MSP_SET_RAW_GPS\n")
             break;
+        case MSP_SET_ATTITUDE:
+            MW_TRACE("MSP_SET_ATTITUDE\n")
+            break;
 
     }
     mwiState->callback(recievedCmd);
@@ -420,6 +423,3 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState)
 //	MW_TRACE(" end ")
 
 }
-
-
-

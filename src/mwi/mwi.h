@@ -77,6 +77,7 @@ typedef struct mwi_mav_t {
 #define   MWI_FULLFRAME_SIZE 64
 
 #define   MSP_PRIVATE                1
+#define   MSP_SET_ATTITUDE          10
 
 #define   MSP_IDENT                100    //out message         multitype + multiwii version + protocol version + capability variable
 #define   MSP_STATUS               101    //out message         cycletime & errors_count & sensor present & box activation & current setting number
