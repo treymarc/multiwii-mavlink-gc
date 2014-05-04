@@ -3,6 +3,8 @@ multiwii-mavlink-gc
 
 Connecting Multiwii Flight Controler to QGroundControl with mavlink
 
+Connecting Multiwii Flight Controler to FlightGear simulator
+
 Multiwii Serial Protocol decoding exemple in C
 
 Multiwii Serial Protocol log to csv  
