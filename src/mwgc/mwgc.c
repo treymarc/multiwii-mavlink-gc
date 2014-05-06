@@ -63,6 +63,60 @@ typedef int SOCKET;
 // this header
 #include "mwgc.h"
 
+
+enum {
+    BOXARM = 0,
+    BOXANGLE,
+    BOXHORIZON,
+    BOXBARO,
+    BOXVARIO,
+    BOXMAG,
+    BOXHEADFREE,
+    BOXHEADADJ,
+    BOXCAMSTAB,
+    BOXCAMTRIG,
+    BOXGPSHOME,
+    BOXGPSHOLD,
+    BOXPASSTHRU,
+    BOXBEEPERON,
+    BOXLEDMAX,
+    BOXLEDLOW,
+    BOXLLIGHTS,
+    BOXCALIB,
+    BOXGOV,
+    BOXOSD,
+    BOXTELEMETRY,
+    CHECKBOXITEMS
+};
+struct box_t {
+    const uint8_t boxIndex;
+    const char *boxName;
+    const uint8_t permanentId;
+} mwiGuiBoxes[] = {
+    { BOXARM, "ARM", 0 },
+    { BOXANGLE, "ANGLE", 1 },
+    { BOXHORIZON, "HORIZON", 2 },
+    { BOXBARO, "BARO", 3 },
+    { BOXVARIO, "VARIO", 4 },
+    { BOXMAG, "MAG", 5 },
+    { BOXHEADFREE, "HEADFREE", 6 },
+    { BOXHEADADJ, "HEADADJ", 7 },
+    { BOXCAMSTAB, "CAMSTAB", 8 },
+    { BOXCAMTRIG, "CAMTRIG", 9 },
+    { BOXGPSHOME, "GPS HOME", 10 },
+    { BOXGPSHOLD, "GPS HOLD", 11 },
+    { BOXPASSTHRU, "PASSTHRU", 12 },
+    { BOXBEEPERON, "BEEPER", 13 },
+    { BOXLEDMAX, "LEDMAX", 14 },
+    { BOXLEDLOW, "LEDLOW", 15 },
+    { BOXLLIGHTS, "LLIGHTS", 16 },
+    { BOXCALIB, "CALIB", 17 },
+    { BOXGOV, "GOVERNOR", 18 },
+    { BOXOSD, "OSD SW", 19 },
+    { BOXTELEMETRY, "TELEMETRY", 20 },
+    { CHECKBOXITEMS, NULL, 0xFF }
+};
+
 //--
 typedef struct fs_output_t {
     // gps
@@ -433,14 +487,14 @@ void recieveFromFS()
             swap64(&fsMsg.ratePitch);
             swap64(&fsMsg.rateYaw);
 
-            if (fsMsg.altitude<0){
+            if (fsMsg.altitude < 0) {
                 fsMsg.altitude = 0;
             }
             payload->length = 0;
             MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.roll * 10.0f));
             MWIserialbuffer_Payloadwrite16(payload, lrintf(-fsMsg.pitch * 10.0f));
             MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.heading));
-            MWIserialbuffer_Payloadwrite32(payload, lrintf(fsMsg.altitude * 0.3048 )*100);
+            MWIserialbuffer_Payloadwrite32(payload, lrintf(fsMsg.altitude * 0.3048) * 100);
             MWIserialbuffer_askForFrame(serialLink, MSP_SET_ATTITUDE, payload);
 
             payload->length = 0;
@@ -448,12 +502,10 @@ void recieveFromFS()
             MWIserialbuffer_Payloadwrite8(payload, 9);          // GPS_numSat
             MWIserialbuffer_Payloadwrite32(payload, (int32_t)(fsMsg.latitude * 10000000));   // GPS_coord[LAT] / 90
             MWIserialbuffer_Payloadwrite32(payload, (int32_t)(fsMsg.longitude * 10000000));   // GPS_coord[LON]/ 180
-            MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.altitude * 0.3048 )*10);      // GPS_altitude 0.1m
+            MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.altitude * 0.3048) * 10);      // GPS_altitude 0.1m
             MWIserialbuffer_Payloadwrite16(payload, (int32_t)(fsMsg.groundspeed));      // GPS_speed
 
             MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payload);
-
-
 
         }
     } else {
@@ -492,9 +544,10 @@ void callBack_mwi(int state)
     uint64_t currentTime = microsSinceEpoch();
     int i;
     int len = 0;
-    int gps = 0;
-    int armed = 0;
-    int stabilize = 0;
+    int gpsHold = NOK;
+    int gpsHome = NOK;
+    int armed = NOK;
+    int stabilize = NOK;
     //   int mavMode = MAV_MODE_MANUAL_DISARMED;
 
     int MAVLINK_SENSOR_PRESENT_DEFAULT = (MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE | MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL | MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION | MAV_SYS_STATUS_SENSOR_YAW_POSITION
@@ -541,33 +594,34 @@ void callBack_mwi(int state)
 
             for (i = 0; i < mwiState->boxcount; i++) {
                 (mwiState->box[i])->state = ((mwiState->mode & (1 << i)) > 0);
-                if (0 == strcmp(mwiState->box[i]->name, "ARM")) {
+                if (0 == strcmp(mwiState->box[i]->name, mwiGuiBoxes[BOXARM].boxName)) {
                     armed = mwiState->box[i]->state;
                 }
-                if (0 == strcmp(mwiState->box[i]->name, "HORIZON")) {
+                if (0 == strcmp(mwiState->box[i]->name, mwiGuiBoxes[BOXHORIZON].boxName)) {
                     stabilize = mwiState->box[i]->state;
+                }
+                if (0 == strcmp(mwiState->box[i]->name, mwiGuiBoxes[BOXGPSHOLD].boxName)) {
+                    gpsHold = mwiState->box[i]->state;
+                }
+                if (0 == strcmp(mwiState->box[i]->name,mwiGuiBoxes[BOXGPSHOME].boxName)) {
+                    gpsHome = mwiState->box[i]->state;
                 }
             }
 
-            armed = OK;
-
-            if (gps && armed && stabilize)
-
-                mavlinkState->mwiFlightMode = MAV_MODE_GUIDED_ARMED;
-
-            else if (gps && !armed && stabilize)
-                mavlinkState->mwiFlightMode = MAV_MODE_GUIDED_DISARMED;
-
-            else if (!gps && armed && !stabilize)
+            if ((gpsHome || gpsHold) && armed)
+                mavlinkState->mwiFlightMode = MAV_MODE_AUTO_ARMED;
+            else if ((gpsHome || gpsHold) && !armed)
+                mavlinkState->mwiFlightMode = MAV_MODE_AUTO_DISARMED;
+            else if (armed && !stabilize)
                 mavlinkState->mwiFlightMode = MAV_MODE_MANUAL_ARMED;
 
-            else if (!gps && !armed && !stabilize)
+            else if (!armed && !stabilize)
                 mavlinkState->mwiFlightMode = MAV_MODE_MANUAL_DISARMED;
 
-            else if (!gps && armed && stabilize)
+            else if (armed && stabilize)
                 mavlinkState->mwiFlightMode = MAV_MODE_STABILIZE_ARMED;
 
-            else if (!gps && !armed && stabilize)
+            else if (!armed && stabilize)
                 mavlinkState->mwiFlightMode = MAV_MODE_STABILIZE_DISARMED;
 
             int reportedState;
@@ -650,7 +704,6 @@ void callBack_mwi(int state)
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
             break;
-
 
         case MSP_RAW_GPS:
             // Send gps
