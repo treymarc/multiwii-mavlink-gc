@@ -63,7 +63,6 @@ typedef int SOCKET;
 // this header
 #include "mwgc.h"
 
-
 enum {
     BOXARM = 0,
     BOXANGLE,
@@ -603,7 +602,7 @@ void callBack_mwi(int state)
                 if (0 == strcmp(mwiState->box[i]->name, mwiGuiBoxes[BOXGPSHOLD].boxName)) {
                     gpsHold = mwiState->box[i]->state;
                 }
-                if (0 == strcmp(mwiState->box[i]->name,mwiGuiBoxes[BOXGPSHOME].boxName)) {
+                if (0 == strcmp(mwiState->box[i]->name, mwiGuiBoxes[BOXGPSHOME].boxName)) {
                     gpsHome = mwiState->box[i]->state;
                 }
             }
