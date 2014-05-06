@@ -26,9 +26,9 @@ build with debug messages, show messages:
 Run
 ===================
 
-in a terminal navigate to folder src\mavlink :
+in a terminal navigate to folder src\mwgc :
 	
-	run "mwgc --help" 
+	"mwgc --help" 
 		
 		
 read data from COM4 and broadcast to groundStation running at ip 192.168.0.13
