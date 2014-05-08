@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <err.h>
+
 
 // mavlink message headers
 #include "common/mavlink.h"
@@ -52,6 +52,7 @@ typedef uint32_t socklen_t;
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <err.h>
 typedef int SOCKET;
 #define closesocket(s) close(s)
 #endif
@@ -293,23 +294,38 @@ int main(int argc, char* argv[])
 
     // Attempt to make it non blocking
 #if defined(_WINDOZ)
-    u_long arg = 1;
-    if(ioctlsocket(sock, FIONBIO, &arg )<0) {
+    u_long argi = 1;
+    if(ioctlsocket(sock, FIONBIO, &argi )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(serialLink);
     }
 
-    u_long arg = 1;
-    if(ioctlsocket(sockFSin, FIONBIO, &arg )<0) {
+    argi = 1;
+    if(ioctlsocket(sockFSin, FIONBIO, &argi )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(serialLink);
     }
-    u_long arg = 1;
-    if(ioctlsocket(sockFSout, FIONBIO, &arg )<0) {
+    argi = 1;
+    if(ioctlsocket(sockFSout, FIONBIO, &argi )<0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
         eexit(serialLink);
     }
 #define SOCKLEN_T_INT(fromlen) ((int*)fromlen)
+    int opt = 1;
+       if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
+           printf("IMU setsockopt SO_REUSEADDR");
+           eexit(serialLink);
+       }
+       opt = 1;
+       if (setsockopt(sockFSin, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
+           printf("IMU setsockopt SO_REUSEADDR");
+           eexit(serialLink);
+       }
+       opt = 1;
+       if (setsockopt(sockFSout, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
+           printf("IMU setsockopt SO_REUSEADDR");
+           eexit(serialLink);
+       }
 #else
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
@@ -327,7 +343,7 @@ int main(int argc, char* argv[])
         eexit(serialLink);
     }
 #define SOCKLEN_T_INT(fromlen) fromlen
-#endif
+
     int opt = 1;
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         err(1, "IMU setsockopt SO_REUSEADDR");
@@ -338,7 +354,7 @@ int main(int argc, char* argv[])
     if (setsockopt(sockFSout, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         err(1, "IMU setsockopt SO_REUSEADDR");
     // end socket
-
+#endif
     // init serial
     serialLink = MWIserialbuffer_init(mavlinkState->serialDevice, mavlinkState->baudrate);
     if (serialLink == NOK) {
@@ -630,6 +646,9 @@ void callBack_mwi(int state)
 //            } else {
             reportedState = armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY;
 //            }
+            if (mavlinkState->sendRcData){
+                mavlinkState->mwiFlightMode = MAV_MODE_MANUAL_ARMED;
+            }
             mavlink_msg_heartbeat_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, mavlinkState->mwiAirFrametype, mavlinkState->mwiAutoPilotType, mavlinkState->mwiFlightMode, 0, reportedState);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
 
@@ -913,15 +932,18 @@ void handleMessage(mavlink_message_t* currentMsg)
             break;
 
         case MAVLINK_MSG_ID_MANUAL_CONTROL:
+
             if (mavlinkState->sendRcData) {
                 mavlink_manual_control_t packet;
                 mavlink_msg_manual_control_decode(currentMsg, &packet);
+
                 mavlinkState->rcdata.x = 1500 - packet.x / 2;
                 mavlinkState->rcdata.y = 1500 + packet.y / 2;
-                mavlinkState->rcdata.z = 1500 + packet.z / 2;
+                mavlinkState->rcdata.z = (1000 + packet.z) ;
                 mavlinkState->rcdata.r = 1500 + packet.r / 2;
                 mavlinkState->rcdata.buttons = packet.buttons;
                 mavlinkState->rcdata.toSend = OK;
+
             }
             break;
 
