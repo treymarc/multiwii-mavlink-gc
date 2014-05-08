@@ -12,29 +12,32 @@ void rtfmHelp(void)
 {
     printf("\nMultiwii Mavlink groundControl\n");
 
-    printf("\nUsage:\n\n");
+    printf("\n Usage:\n\n");
 
-    printf("\t -hil <int> , hardware in the loop simulation, default is 0\n");
+    printf("\t -sendrcdata : send rc command to the fligt controller\n");
+    printf("\t  1 : send msp command\n");
+    printf("\t  0 : dont send command\n\n");
+    printf("\t -hil : hardware in the loop simulation\n");
     printf("\t  1 : flight gear simulator\n");
     printf("\t  0 : no simulation\n\n");
-    printf("\t -v <level>, verbose level default is 1\n");
+    printf("\t -v : verbose level default is 1\n");
     printf("\t  1 : normal\n");
     printf("\t  0 : quiet\n\n");
-    printf("\t -ip <ip address of QGroundControl>\n");
+    printf("\t -ip : ip address of QGroundControl\n");
     printf("\t  default value : 127.0.0.1\n\n");
-    printf("\t -s <serial device name>\n");
+    printf("\t -s : serial device name\n");
     printf("\t  default value : /dev/ttyO2\n\n");
-    printf("\t -baudrate <spedd\n");
+    printf("\t -baudrate : baudrate to use woth serial link\n");
     printf("\t  default value : 115200\n\n");
-    printf("\t -id <id for mavlink>\n");
+    printf("\t -id : id for this flight controller in mavlink\n");
     printf("\t  default value : 1\n\n");
-    printf("\t -px4 <mode>\n");
+    printf("\t -px4 : px4 mode , only for the configuration screen in qgc\n");
     printf("\t  1 : claim to be a PX4 autopilote\n");
     printf("\t  0 : claim to be generic autopilot (default)\n\n");
-    printf("\t -telemetryauto <int>\n");
+    printf("\t -telemetryauto <n>\n");
     printf("\t  1 : assume the flight controler will send data\n");
     printf("\t  0 : send request for each data (default)\n\n");
-    printf("\t -hertz <int>\n");
+    printf("\t -hertz <n>\n");
     printf("\t  Serial refresh for the imu. Default is 30, max is 60\n\n");
     printf("\t --help\n");
     printf("\t  display this message\n\n");

@@ -524,7 +524,7 @@ void recieveFromFS()
 
         }
     } else {
-        MW_TRACE("\n")MW_TRACE(" <-- failed to read from udp sockFSin :(  <--\n")
+       // MW_TRACE("\n")MW_TRACE(" <-- nothing to read from udp sockFSin :(  <--\n")
     }
 }
 void sendToFS(mwi_mav_t *mwi)
@@ -547,7 +547,7 @@ void sendToFS(mwi_mav_t *mwi)
     swap64(&cdata.throttle4);
 
     int n;
-    n = sendto(sockFSout, &cdata, sizeof(cdata), 0, (struct sockaddr *)&locFSAddr, sizeFsAddr);
+    n = sendto(sockFSout, (const char*)&cdata, sizeof(cdata), 0, (struct sockaddr *)&locFSAddr, sizeFsAddr);
     if (n < 0)
         printf("ERROR in sockFSout");
 }
