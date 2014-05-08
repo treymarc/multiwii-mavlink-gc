@@ -8,7 +8,6 @@
 # (at your option) any later version.
 
 MAVLINK_SRC_DIR	:= src$(PATH_SEP)mwgc
-MAVLINK_SRC_CFLAGS	:= -lm
 MAVLINK_SRC_OBJECT :=  	mwgc
 MAVLINK_SRC_TARGETS	:=  $(MAVLINK_SRC_OBJECT)-$(MWGC_VERSION)
 
@@ -21,7 +20,7 @@ ifeq ($(WINBUILD),true)
 endif
 
 $(MAVLINK_SRC_DIR)$(PATH_SEP)$(MAVLINK_SRC_TARGETS): $(MAVLINK_SRC_DIR)$(PATH_SEP)$(MAVLINK_SRC_OBJECT).o  $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o $(MWI_SRC_DIR)$(PATH_SEP)mwi.o $(UTILS_SRC_DIR)$(PATH_SEP)utils.o $(MAVLINK_SRC_DIR)$(PATH_SEP)conf.o
-	$(CC) $(LDFLAGS) $(MAVLINK_SRC_CFLAGS) -o $@ $^ $(WINOP)
+	$(CC) $(LDFLAGS) -o $@ $^ $(WINOP)
 
 
 #

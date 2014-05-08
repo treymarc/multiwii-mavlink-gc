@@ -56,6 +56,8 @@ typedef int SOCKET;
 #define closesocket(s) close(s)
 #endif
 
+#define FLOAT_TO_INT(VVALUIN) (VVALUIN + 0.5f)
+
 // mwi lib
 #include "../utils/utils.h"
 #include "../mwi/mwi.h"
@@ -504,11 +506,12 @@ void recieveFromFS()
             if (fsMsg.altitude < 0) {
                 fsMsg.altitude = 0;
             }
+
             payload->length = 0;
-            MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.roll * 10.0f));
-            MWIserialbuffer_Payloadwrite16(payload, lrintf(-fsMsg.pitch * 10.0f));
-            MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.heading));
-            MWIserialbuffer_Payloadwrite32(payload, lrintf(fsMsg.altitude * 0.3048) * 100);
+            MWIserialbuffer_Payloadwrite16(payload, FLOAT_TO_INT(fsMsg.roll * 10.0f));
+            MWIserialbuffer_Payloadwrite16(payload, FLOAT_TO_INT(-fsMsg.pitch * 10.0f));
+            MWIserialbuffer_Payloadwrite16(payload, FLOAT_TO_INT(fsMsg.heading));
+            MWIserialbuffer_Payloadwrite32(payload, FLOAT_TO_INT(fsMsg.altitude * 0.3048) * 100);
             MWIserialbuffer_askForFrame(serialLink, MSP_SET_ATTITUDE, payload);
 
             payload->length = 0;
@@ -516,7 +519,7 @@ void recieveFromFS()
             MWIserialbuffer_Payloadwrite8(payload, 9);          // GPS_numSat
             MWIserialbuffer_Payloadwrite32(payload, (int32_t)(fsMsg.latitude * 10000000));   // GPS_coord[LAT] / 90
             MWIserialbuffer_Payloadwrite32(payload, (int32_t)(fsMsg.longitude * 10000000));   // GPS_coord[LON]/ 180
-            MWIserialbuffer_Payloadwrite16(payload, lrintf(fsMsg.altitude * 0.3048) * 10);      // GPS_altitude 0.1m
+            MWIserialbuffer_Payloadwrite16(payload, FLOAT_TO_INT(fsMsg.altitude * 0.3048) * 10);      // GPS_altitude 0.1m
             MWIserialbuffer_Payloadwrite16(payload, (int32_t)(fsMsg.groundspeed));      // GPS_speed
 
             MWIserialbuffer_askForFrame(serialLink, MSP_SET_RAW_GPS, payload);
@@ -716,7 +719,7 @@ void callBack_mwi(int state)
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
             // Send update hud
-            mavlink_msg_vfr_hud_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, lrintf(mwiState->baro / 100.0f), lrintf(mwiState->vario / 100.0f));
+            mavlink_msg_vfr_hud_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, 0, 0, mwiState->head, (mwiState->rcThrottle - 1000) / 10, FLOAT_TO_INT(mwiState->baro / 100.0f), FLOAT_TO_INT(mwiState->vario / 100.0f));
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
@@ -724,11 +727,11 @@ void callBack_mwi(int state)
 
         case MSP_RAW_GPS:
             // Send gps
-            mavlink_msg_gps_raw_int_pack(mavlinkState->mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, lrintf(mwiState->GPS_altitude * 100.0f), 0, 0, mwiState->GPS_speed, 0, mwiState->GPS_numSat);
+            mavlink_msg_gps_raw_int_pack(mavlinkState->mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime, mwiState->GPS_fix + 1, mwiState->GPS_latitude, mwiState->GPS_longitude, FLOAT_TO_INT(mwiState->GPS_altitude * 100.0f), 0, 0, mwiState->GPS_speed, 0, mwiState->GPS_numSat);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
-            mavlink_msg_global_position_int_pack(mavlinkState->mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime / 1000, mwiState->GPS_latitude, mwiState->GPS_longitude, lrintf(mwiState->GPS_altitude * 100.0f), lrintf(mwiState->baro * 1000.0f), 0, 0, 0, 0);
+            mavlink_msg_global_position_int_pack(mavlinkState->mwiUavID, MAV_COMP_ID_GPS, &msg, currentTime / 1000, mwiState->GPS_latitude, mwiState->GPS_longitude, FLOAT_TO_INT(mwiState->GPS_altitude * 100.0f), FLOAT_TO_INT(mwiState->baro * 1000.0f), 0, 0, 0, 0);
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
