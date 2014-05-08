@@ -31,7 +31,6 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-
 // mavlink message headers
 #include "common/mavlink.h"
 
@@ -312,20 +311,20 @@ int main(int argc, char* argv[])
     }
 #define SOCKLEN_T_INT(fromlen) ((int*)fromlen)
     int opt = 1;
-       if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
-           printf("IMU setsockopt SO_REUSEADDR");
-           eexit(serialLink);
-       }
-       opt = 1;
-       if (setsockopt(sockFSin, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
-           printf("IMU setsockopt SO_REUSEADDR");
-           eexit(serialLink);
-       }
-       opt = 1;
-       if (setsockopt(sockFSout, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
-           printf("IMU setsockopt SO_REUSEADDR");
-           eexit(serialLink);
-       }
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt)) < 0) {
+        printf("IMU setsockopt SO_REUSEADDR");
+        eexit(serialLink);
+    }
+    opt = 1;
+    if (setsockopt(sockFSin, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt)) < 0) {
+        printf("IMU setsockopt SO_REUSEADDR");
+        eexit(serialLink);
+    }
+    opt = 1;
+    if (setsockopt(sockFSout, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt)) < 0) {
+        printf("IMU setsockopt SO_REUSEADDR");
+        eexit(serialLink);
+    }
 #else
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0) {
         fprintf(stderr, "error setting nonblocking: %s\n", strerror(errno));
@@ -473,7 +472,7 @@ void recieveFromGS(void)
 void recieveFromFS()
 {
 
-    int recsize = recvfrom(sockFSin, &fsMsg, sizeof(fsMsg), 0, NULL, NULL);
+    int recsize = recvfrom(sockFSin, (char*)&fsMsg, sizeof(fsMsg), 0, NULL, NULL);
     if (recsize > 0) {
         MW_TRACE("\n")MW_TRACE(" <-- udp in FS <--\n")
         swap32(&fsMsg.ctrl);
@@ -524,7 +523,7 @@ void recieveFromFS()
 
         }
     } else {
-       // MW_TRACE("\n")MW_TRACE(" <-- nothing to read from udp sockFSin :(  <--\n")
+        // MW_TRACE("\n")MW_TRACE(" <-- nothing to read from udp sockFSin :(  <--\n")
     }
 }
 void sendToFS(mwi_mav_t *mwi)
@@ -646,7 +645,7 @@ void callBack_mwi(int state)
 //            } else {
             reportedState = armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY;
 //            }
-            if (mavlinkState->sendRcData){
+            if (mavlinkState->sendRcData) {
                 mavlinkState->mwiFlightMode = MAV_MODE_MANUAL_ARMED;
             }
             mavlink_msg_heartbeat_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, mavlinkState->mwiAirFrametype, mavlinkState->mwiAutoPilotType, mavlinkState->mwiFlightMode, 0, reportedState);
@@ -939,7 +938,7 @@ void handleMessage(mavlink_message_t* currentMsg)
 
                 mavlinkState->rcdata.x = 1500 - packet.x / 2;
                 mavlinkState->rcdata.y = 1500 + packet.y / 2;
-                mavlinkState->rcdata.z = (1000 + packet.z) ;
+                mavlinkState->rcdata.z = (1000 + packet.z);
                 mavlinkState->rcdata.r = 1500 + packet.r / 2;
                 mavlinkState->rcdata.buttons = packet.buttons;
                 mavlinkState->rcdata.toSend = OK;
