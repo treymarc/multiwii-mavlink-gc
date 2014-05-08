@@ -29,6 +29,7 @@ typedef struct {
     // related to the mav
     int autoTelemtry, calibrating;
 
+    int throttleHalfRange;
     int sendRcData;             // true if the gs send rcdata
     struct rcdata {             // mavlink rcdata
         int x, y, z, r, buttons;

@@ -742,7 +742,8 @@ void callBack_mwi(int state)
 
         case MSP_ATTITUDE:
             // Send attitude
-            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(mwiState->angx), -deg2radian(mwiState->angy), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy), deg2radian(mwiState->gz));
+            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(FLOAT_TO_INT(mwiState->angx / 10.0f)), -deg2radian(FLOAT_TO_INT(mwiState->angy/10.0f)), deg2radian(mwiState->head), deg2radian(mwiState->gx),
+                    deg2radian(mwiState->gy), deg2radian(mwiState->gz));
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
@@ -941,8 +942,13 @@ void handleMessage(mavlink_message_t* currentMsg)
 
                 mavlinkState->rcdata.x = 1500 - packet.x / 2;
                 mavlinkState->rcdata.y = 1500 + packet.y / 2;
-                mavlinkState->rcdata.z = (1000 + packet.z);
                 mavlinkState->rcdata.r = 1500 + packet.r / 2;
+                if (mavlinkState->throttleHalfRange) {
+                    mavlinkState->rcdata.z = 1000 + packet.z;
+                } else {
+                    mavlinkState->rcdata.z = 1500 + packet.z / 2;
+                }
+
                 mavlinkState->rcdata.buttons = packet.buttons;
                 mavlinkState->rcdata.toSend = OK;
 

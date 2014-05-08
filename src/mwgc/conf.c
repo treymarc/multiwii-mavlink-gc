@@ -17,6 +17,9 @@ void rtfmHelp(void)
     printf("\t -sendrcdata : send rc command to the fligt controller\n");
     printf("\t  1 : send msp command\n");
     printf("\t  0 : dont send command\n\n");
+    printf("\t -throttlerange : the joystick throttle value range\n");
+    printf("\t  1 : expected only positive value [0,1]\n");
+    printf("\t  0 : default is full range[-1,1]\n\n");
     printf("\t -hil : hardware in the loop simulation\n");
     printf("\t  1 : flight gear simulator\n");
     printf("\t  0 : no simulation\n\n");
@@ -92,7 +95,11 @@ int config(mavlink_state_t *mavlinkState, int argc, char* argv[])
                 }else if (strcmp(argv[i], "-hil") == 0) {
                     mavlinkState->hil = atoi(argv[i + 1]);
                     i++;
+                }else if (strcmp(argv[i], "-throttlerange") == 0) {
+                    mavlinkState->throttleHalfRange = atoi(argv[i + 1]);
+                    i++;
                 }
+
             }
         }
     }
