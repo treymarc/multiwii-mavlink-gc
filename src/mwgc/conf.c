@@ -40,6 +40,8 @@ void rtfmHelp(void)
     printf("\t  display this message\n\n");
     printf("\t --version\n");
     printf("\t  show version number\n\n");
+    printf("\t -sendrcdata \n");
+    printf("\t  Set as 1 to send rc data using joystick\n\n");  
 }
 
 int config(mavlink_state_t *mavlinkState, int argc, char* argv[])
