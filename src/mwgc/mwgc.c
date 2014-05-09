@@ -742,7 +742,7 @@ void callBack_mwi(int state)
 
         case MSP_ATTITUDE:
             // Send attitude
-            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(FLOAT_TO_INT(mwiState->angx / 10.0f)), -deg2radian(FLOAT_TO_INT(mwiState->angy/10.0f)), deg2radian(mwiState->head), deg2radian(mwiState->gx),
+            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(FLOAT_TO_INT(mwiState->angx)), -deg2radian(FLOAT_TO_INT(mwiState->angy)), deg2radian(mwiState->head), deg2radian(mwiState->gx),
                     deg2radian(mwiState->gy), deg2radian(mwiState->gz));
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);

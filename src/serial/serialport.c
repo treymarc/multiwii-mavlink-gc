@@ -40,6 +40,7 @@ int serialport_writeChar(HANDLE fd, char b)
     int n = serialport_writewin(fd, &b, 1);
 #else
     int n = write(fd, &b, 1);
+    tcdrain(fd);
 #endif
 
     if (n != 1)
@@ -49,13 +50,11 @@ int serialport_writeChar(HANDLE fd, char b)
 
 int serialport_write(HANDLE fd, char* str, int len)
 {
-//    int len = 6;
-    //int len = strlen(str);
-
 #if defined (_WINDOZ)
     int n = serialport_writewin(fd, str, len);
 #else
     int n = write(fd, str, len);
+    tcdrain(fd);
 #endif
 
     if (n != len)
@@ -115,7 +114,7 @@ HANDLE serialport_init(const char* serialport, int baudrate)
 #else // posix
     struct termios toptions;
 
-    fd = open(serialport, O_RDWR | O_NOCTTY);
+    fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
 
     if (fd < OK) {
         perror("init_serialport: Unable to open port ");
@@ -148,18 +147,29 @@ HANDLE serialport_init(const char* serialport, int baudrate)
     cfsetispeed(&toptions, baudrate);
     cfsetospeed(&toptions, baudrate);
 
-    // set parity8N1
-    toptions.c_cflag &= ~PARENB;
-    toptions.c_cflag &= ~CSTOPB;
-    toptions.c_cflag &= ~CSIZE;
-    toptions.c_cflag |= CS8;
+    toptions.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
+    toptions.c_oflag = 0;
 
-    // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
+    toptions.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+    toptions.c_cflag &= ~(CSIZE | PARENB);
+    toptions.c_cflag |= CS8;
+    toptions.c_cflag |= CLOCAL;
+
     toptions.c_cc[VMIN] = 0;
-    toptions.c_cc[VTIME] = 0;
+    toptions.c_cc[VTIME] = 10; 
+
+//    // set parity8N1
+//    toptions.c_cflag &= ~PARENB;
+//    toptions.c_cflag &= ~CSTOPB;
+//    toptions.c_cflag &= ~CSIZE;
+//    toptions.c_cflag |= CS8;
+//
+//    // see:
+//    toptions.c_cc[VMIN] = 0;
+//    toptions.c_cc[VTIME] = 0;
 
     // apply options
-    if (tcsetattr(fd, TCSANOW, &toptions) < 0) {
+    if (tcsetattr(fd, TCSAFLUSH, &toptions) < 0) {
         perror("init_serialport: Couldn't set term attributes");
         return NOK;
     }

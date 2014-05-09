@@ -411,11 +411,12 @@ void MWIserialbuffer_readNewFrames(HANDLE serialPort, mwi_mav_t *mwiState)
                     stateMSP = (IDLE);
                     if ((checksum & MASK) != readbuffer[0]) {
                         //MW_TRACE("msp checksum failed\n")
-                        printf("msp checksum failed : cmd [%i]\n", (uint8_t)cmd);
+                        printf("msp checksum failed : cmd [%i] payload : %d\n", (uint8_t)cmd, dataSize);
                         mwiState->serialErrorsCount += 1;
                     } else {
                         decode(mwiState);
                     }
+                    memset(&frame, 0, sizeof(frame));
                 }
                 break;
         }

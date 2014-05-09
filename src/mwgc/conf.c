@@ -19,7 +19,7 @@ void rtfmHelp(void)
     printf("\t  0 : dont send command\n\n");
     printf("\t -throttlerange : the joystick throttle value range\n");
     printf("\t  1 : expected only positive value [0,1]\n");
-    printf("\t  0 : default is full range[-1,1]\n\n");
+    printf("\t  0 : default is full range [-1,1]\n\n");
     printf("\t -hil : hardware in the loop simulation\n");
     printf("\t  1 : flight gear simulator\n");
     printf("\t  0 : no simulation\n\n");
