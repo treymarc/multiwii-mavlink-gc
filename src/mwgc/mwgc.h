@@ -14,6 +14,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+typedef enum {
+    FC_BASEFLIGHT =0,
+    FC_MWI8BIT ,
+} fcType;
 
 typedef struct {
 
@@ -36,6 +40,7 @@ typedef struct {
         int toSend;
     } rcdata;
 
+    int fcType;
     int mwiUavID;
     int mwiAutoPilotType;       // this is used to report as a px4 or generic in the config screen
     int mwiFlightMode;          // the reported mavlink flight mode

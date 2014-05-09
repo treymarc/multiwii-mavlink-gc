@@ -409,8 +409,14 @@ int main(int argc, char* argv[])
                 payload->length = 0;
                 MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.y);
                 MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.x);
-                MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.r);
-                MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.z);
+                if (mavlinkState->fcType == FC_MWI8BIT) {
+                    MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.r);
+                    MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.z);
+                } else {
+
+                    MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.z);
+                    MWIserialbuffer_Payloadwrite16(payload, mavlinkState->rcdata.r);
+                }
                 MWIserialbuffer_Payloadwrite16(payload, 1500);
                 MWIserialbuffer_Payloadwrite16(payload, 1500);
                 MWIserialbuffer_Payloadwrite16(payload, 1500);
@@ -432,10 +438,10 @@ int main(int argc, char* argv[])
 void annex(void)
 {
 
-    // update mwiStatewith new serial date from serialLink
+// update mwiStatewith new serial date from serialLink
     MWIserialbuffer_readNewFrames(serialLink, mwiState);
 
-    //  recieve udp from groundstation
+//  recieve udp from groundstation
     recieveFromGS();
 
     if (mavlinkState->hil) {
@@ -532,13 +538,24 @@ void recieveFromFS()
 void sendToFS(mwi_mav_t *mwi)
 {
     fs_input_t cdata;
-    cdata.aileron = (double)((mwi->servo[4] - 1500) / 500.0f);
-    cdata.elevator = (double)((mwi->servo[6] - 1500) / 500.0f);
-    cdata.rudder = (double)(-(mwi->servo[5] - 1500) / 500.0f);
-    cdata.throttle1 = (double)((mwi->mot[0] - 1000) / 1000.0f);
-    cdata.throttle2 = (double)((mwi->mot[0] - 1000) / 1000.0f);
-    cdata.throttle3 = (double)((mwi->mot[1] - 1000) / 1000.0f);
-    cdata.throttle4 = (double)((mwi->mot[2] - 1000) / 1000.0f);
+    if (mavlinkState->fcType == FC_MWI8BIT) {
+        // PLANE default
+       cdata.aileron = (double)(-(mwi->servo[4] - 1500) / 500.0f);
+        cdata.elevator = (double)((mwi->servo[6] - 1500) / 500.0f);
+        cdata.rudder = (double)((mwi->servo[5] - 1500) / 500.0f);
+        cdata.throttle1 = (double)((mwi->mot[0] - 1000) / 1000.0f);
+        cdata.throttle2 = (double)((mwi->mot[0] - 1000) / 1000.0f);
+        cdata.throttle3 = (double)((mwi->mot[1] - 1000) / 1000.0f);
+        cdata.throttle4 = (double)((mwi->mot[2] - 1000) / 1000.0f);
+    } else {
+        cdata.aileron = (double)((mwi->servo[4] - 1500) / 500.0f);
+        cdata.elevator = (double)((mwi->servo[6] - 1500) / 500.0f);
+        cdata.rudder = (double)(-(mwi->servo[5] - 1500) / 500.0f);
+        cdata.throttle1 = (double)((mwi->mot[0] - 1000) / 1000.0f);
+        cdata.throttle2 = (double)((mwi->mot[0] - 1000) / 1000.0f);
+        cdata.throttle3 = (double)((mwi->mot[1] - 1000) / 1000.0f);
+        cdata.throttle4 = (double)((mwi->mot[2] - 1000) / 1000.0f);
+    }
 
     swap64(&cdata.aileron);
     swap64(&cdata.elevator);
@@ -565,7 +582,7 @@ void callBack_mwi(int state)
     int gpsHome = NOK;
     int armed = NOK;
     int stabilize = NOK;
-    //   int mavMode = MAV_MODE_MANUAL_DISARMED;
+//   int mavMode = MAV_MODE_MANUAL_DISARMED;
 
     int MAVLINK_SENSOR_PRESENT_DEFAULT = (MAV_SYS_STATUS_SENSOR_3D_GYRO | MAV_SYS_STATUS_SENSOR_3D_ACCEL | MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE | MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL | MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION | MAV_SYS_STATUS_SENSOR_YAW_POSITION
             | MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL | MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL | MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS);
@@ -704,7 +721,16 @@ void callBack_mwi(int state)
 
         case MSP_RC:
             // Send rcDate
-            mavlink_msg_rc_channels_raw_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, currentTime / 1000, 0, mwiState->rcRoll, mwiState->rcPitch, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4, mwiState->rssi);
+            if (mavlinkState->fcType == FC_MWI8BIT) {
+                mwiState->rcThrottle += mwiState->rcYaw;
+                mwiState->rcYaw = mwiState->rcThrottle -mwiState->rcYaw;
+                mwiState->rcThrottle -=   mwiState->rcYaw ;
+            }
+
+
+            mavlink_msg_rc_channels_raw_pack(mavlinkState->mwiUavID, MAV_COMP_ID_ALL, &msg, currentTime / 1000, 0, mwiState->rcRoll, mwiState->rcPitch, mwiState->rcThrottle, mwiState->rcYaw, mwiState->rcAUX1, mwiState->rcAUX2, mwiState->rcAUX3, mwiState->rcAUX4,
+                                    mwiState->rssi);
+
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 
@@ -742,8 +768,8 @@ void callBack_mwi(int state)
 
         case MSP_ATTITUDE:
             // Send attitude
-            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(FLOAT_TO_INT(mwiState->angx)), -deg2radian(FLOAT_TO_INT(mwiState->angy)), deg2radian(mwiState->head), deg2radian(mwiState->gx),
-                    deg2radian(mwiState->gy), deg2radian(mwiState->gz));
+            mavlink_msg_attitude_pack(mavlinkState->mwiUavID, MAV_COMP_ID_IMU, &msg, currentTime / 1000, deg2radian(FLOAT_TO_INT(mwiState->angx)), -deg2radian(FLOAT_TO_INT(mwiState->angy)), deg2radian(mwiState->head), deg2radian(mwiState->gx), deg2radian(mwiState->gy),
+                    deg2radian(mwiState->gz));
             len = (char)mavlink_msg_to_send_buffer(buf, &msg);
             sendto(sock, (const char *)buf, (char)len, 0, (struct sockaddr*)&locGSAddr, sizeGroundStationAddr);
 

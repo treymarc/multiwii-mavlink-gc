@@ -14,6 +14,9 @@ void rtfmHelp(void)
 
     printf("\n Usage:\n\n");
 
+    printf("\t -fctype : rc mapping of the fligth controller\n");
+    printf("\t  1 : mwi 8bit\n");
+    printf("\t  0 : baseflight\n\n");
     printf("\t -sendrcdata : send rc command to the fligt controller\n");
     printf("\t  1 : send msp command\n");
     printf("\t  0 : dont send command\n\n");
@@ -92,13 +95,19 @@ int config(mavlink_state_t *mavlinkState, int argc, char* argv[])
                 } else if (strcmp(argv[i], "-v") == 0) {
                     mavlinkState->verbose = atoi(argv[i + 1]);
                     i++;
-                }else if (strcmp(argv[i], "-hil") == 0) {
+                } else if (strcmp(argv[i], "-hil") == 0) {
                     mavlinkState->hil = atoi(argv[i + 1]);
                     i++;
-                }else if (strcmp(argv[i], "-throttlerange") == 0) {
+                } else if (strcmp(argv[i], "-throttlerange") == 0) {
                     mavlinkState->throttleHalfRange = atoi(argv[i + 1]);
                     i++;
+                } else if (strcmp(argv[i], "-fctype") == 0) {
+                    mavlinkState->fcType = atoi(argv[i + 1]);
+                    i++;
                 }
+
+
+
 
             }
         }
