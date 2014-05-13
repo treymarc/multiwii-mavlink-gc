@@ -264,11 +264,11 @@ int main(int argc, char* argv[])
     memset(&locAddr, 0, sizeof(locAddr));
     locAddr.sin_family = AF_INET;
     locAddr.sin_port = htons(14551);
-    locAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    locAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     memset(&locGSAddr, 0, sizeof(locGSAddr));
     locGSAddr.sin_family = AF_INET;
-    locGSAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    locGSAddr.sin_addr.s_addr = inet_addr(mavlinkState->targetIp);
     locGSAddr.sin_port = htons(14550); // TODO port number option
 
     // Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol
