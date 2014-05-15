@@ -10,19 +10,18 @@ MAVLINK = 1.0
 #--------------------
 # Platform options
 #--------------------
-
-ifdef ComSpec
+ifeq ($(shell uname), Linux)
+WINBUILD= false
+RM = rm -r
+PATH_SEP = /
+#BUILDDATE = $(shell (date +'%Y%m%d'))
+else
 WINBUILD = true
 DWIN = -D_WINDOZ
 RM = erase
 PATH_SEP = \\
 EXE_SUFIX = .exe
 #BUILDDATE = $(shell (DATE /T yymmdd))
-else
-WINBUILD= false
-RM = rm -r
-PATH_SEP = /
-#BUILDDATE = $(shell (date +'%Y%m%d'))
 endif
 
 
@@ -35,9 +34,7 @@ MWGC_VERSION = $(VERSION)
 #--------------------
 
 
-CC	?= gcc
-
-CFLAGS	= -std=c99 -pedantic -g -O1
+CFLAGS	= -std=gnu99 -pedantic -g -O1
 
 CFLAGS_MAVLINK = -I./lib/mavlink/$(MAVLINK)/  -DMAVLINK_EXTERNAL_RX_STATUS=0 -DMAVLINK_EXTERNAL_RX_BUFFER=0 -DMAVLINK_CHECK_MESSAGE_LENGTH=0
 
