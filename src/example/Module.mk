@@ -41,12 +41,11 @@ $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.o: $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps.c
 all-example: $(addprefix $(EXAMPLE_SRC_DIR)$(PATH_SEP),$(EXAMPLE_SRC_TARGETS))
 
 clean-example:
-	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)*.o
-	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)example$(EXE_SUFIX)
-	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)log2csv$(EXE_SUFIX)
-	$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps$(EXE_SUFIX)
-	
-	
+	-$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)*.o
+	-$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)example$(EXE_SUFIX)
+	-$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)log2csv$(EXE_SUFIX)
+	-$(RM)  $(EXAMPLE_SRC_DIR)$(PATH_SEP)gps$(EXE_SUFIX)
+
 all: all-example
 
 clean: clean-example

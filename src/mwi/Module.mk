@@ -34,7 +34,7 @@ $(MWI_SRC_DIR)$(PATH_SEP)mwi.o: $(MWI_SRC_DIR)$(PATH_SEP)mwi.c
 all-mwi: $(addprefix $(MWI_SRC_DIR)$(PATH_SEP),$(MWI_SRC_TARGETS))
 
 clean-mwi:
-	$(RM)  $(MWI_SRC_DIR)$(PATH_SEP)*.o
+	-$(RM)  $(MWI_SRC_DIR)$(PATH_SEP)*.o
 	
 all: all-mwi
 

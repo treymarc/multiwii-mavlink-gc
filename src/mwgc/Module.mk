@@ -38,8 +38,8 @@ $(MAVLINK_SRC_DIR)$(PATH_SEP)conf.o: $(MAVLINK_SRC_DIR)$(PATH_SEP)conf.c
 all-mwgc: $(addprefix $(MAVLINK_SRC_DIR)$(PATH_SEP),$(MAVLINK_SRC_TARGETS))
 
 clean-mwgc:
-	$(RM)  $(MAVLINK_SRC_DIR)$(PATH_SEP)*.o
-	$(RM)  $(MAVLINK_SRC_DIR)$(PATH_SEP)$(MAVLINK_SRC_TARGETS)
+	-$(RM)  $(MAVLINK_SRC_DIR)$(PATH_SEP)*.o
+	-$(RM)  $(MAVLINK_SRC_DIR)$(PATH_SEP)$(MAVLINK_SRC_TARGETS)
 	
 
 all: all-mwgc

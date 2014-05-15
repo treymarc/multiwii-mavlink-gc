@@ -15,7 +15,7 @@ $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o: $(SERIAL_SRC_DIR)$(PATH_SEP)serialport
 all-serial: $(SERIAL_SRC_DIR)$(PATH_SEP)serialport.o 
 
 clean-serial:
-	$(RM)  $(SERIAL_SRC_DIR)$(PATH_SEP)*.o 
+	-$(RM)  $(SERIAL_SRC_DIR)$(PATH_SEP)*.o
 
 all: all-serial
 

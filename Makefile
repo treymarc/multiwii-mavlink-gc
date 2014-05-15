@@ -12,17 +12,16 @@ MAVLINK = 1.0
 #--------------------
 ifeq ($(shell uname), Linux)
 WINBUILD= false
-PATH_SEP = /
 #BUILDDATE = $(shell (date +'%Y%m%d'))
 else
 WINBUILD = true
 DWIN = -D_WINDOZ
-PATH_SEP = \\
 EXE_SUFIX = .exe
 #BUILDDATE = $(shell (DATE /T yymmdd))
 endif
 
 RM = rm -r
+PATH_SEP = /
 
 #MWGC_VERSION = $(VERSION)-$(BUILDDATE)
 MWGC_VERSION = $(VERSION)

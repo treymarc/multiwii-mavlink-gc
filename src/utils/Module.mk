@@ -15,7 +15,7 @@ $(UTILS_SRC_DIR)$(PATH_SEP)utils.o: $(UTILS_SRC_DIR)$(PATH_SEP)utils.c
 all-utils: $(UTILS_SRC_DIR)$(PATH_SEP)utils.o 
 
 clean-utils:
-	$(RM)  $(UTILS_SRC_DIR)$(PATH_SEP)*.o 
+	-$(RM)  $(UTILS_SRC_DIR)$(PATH_SEP)*.o
 
 all: all-utils
 
